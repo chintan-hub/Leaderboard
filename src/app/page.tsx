@@ -41,8 +41,10 @@ export default async function DashboardPage() {
     <div className="space-y-10">
       {/* Employee of the Month — the visual centerpiece of the page */}
       <section>
-        <p className="text-xs font-bold uppercase tracking-wider text-brand">{monthLabel(year, month)}</p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-foreground">Employee of the Month</h1>
+        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand">{monthLabel(year, month)}</p>
+        <h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+          Employee of the Month
+        </h1>
         <div className="mt-4">
           <EmployeeOfMonthHero result={employeeOfMonth} />
         </div>
@@ -59,7 +61,7 @@ export default async function DashboardPage() {
             description="Once an admin logs today's production, it shows up here immediately."
           />
         ) : (
-          <Card>
+          <Card raised>
             <div className="flex flex-wrap gap-8">
               <div>
                 <div className="score-hero text-4xl text-foreground">{today.totalCompleted}</div>
@@ -96,7 +98,7 @@ export default async function DashboardPage() {
         <EmployeeLeaderboardPanel
           rows={employeeLeaderboard}
           emptyAction={
-            <Link href="/employees" className="text-sm font-semibold text-brand hover:underline">
+            <Link href="/employees" className="focus-ring rounded text-sm font-semibold text-brand hover:underline">
               Go to Employees
             </Link>
           }
@@ -116,9 +118,12 @@ export default async function DashboardPage() {
 
       {/* Recent activity */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <SectionTitle>Recent Activity</SectionTitle>
-          <Link href="/activity" className="text-sm font-semibold text-brand hover:underline">
+        <div className="mb-5 flex items-center justify-between">
+          <SectionTitle className="mb-0">Recent Activity</SectionTitle>
+          <Link
+            href="/activity"
+            className="focus-ring rounded text-sm font-semibold text-brand hover:underline"
+          >
             View full history →
           </Link>
         </div>
@@ -131,7 +136,7 @@ export default async function DashboardPage() {
           <Card className="p-0">
             <ul className="divide-y divide-border">
               {recentActivity.map((row) => (
-                <li key={row.id} className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
+                <li key={row.id} className="list-row flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
                   <div>
                     <span className="font-bold text-foreground">{row.employeeName}</span>
                     <span className="text-muted"> · {row.departmentName} · {row.reason}</span>

@@ -35,10 +35,10 @@ export default function DepartmentDatePicker({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-brand">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand">
             {isToday(date) ? "Today" : "Date"}
           </p>
           <p className="text-lg font-extrabold text-foreground">{dateLabel(date)}</p>
@@ -48,13 +48,13 @@ export default function DepartmentDatePicker({
           value={date}
           onChange={(e) => goTo(selectedDepartmentId, e.target.value)}
           aria-label="Change date"
-          className="rounded-md border border-border px-3 py-2 text-sm font-semibold text-foreground"
+          className="focus-ring rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground"
         />
         {!isToday(date) && (
           <button
             type="button"
             onClick={() => goTo(selectedDepartmentId, new Date().toISOString().slice(0, 10))}
-            className="text-sm font-semibold text-brand hover:underline"
+            className="focus-ring rounded-lg px-2 py-1 text-sm font-semibold text-brand hover:underline"
           >
             Jump to today
           </button>
@@ -62,17 +62,17 @@ export default function DepartmentDatePicker({
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">Select Department</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Select Department</p>
         <div className="flex flex-wrap gap-2">
           {departments.map((dept) => (
             <button
               key={dept.id}
               type="button"
               onClick={() => goTo(dept.id, date)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+              className={`focus-ring rounded-full px-4 py-2 text-sm font-semibold transition ${
                 dept.id === selectedDepartmentId
-                  ? "bg-brand text-white"
-                  : "bg-white text-muted border border-border hover:border-brand"
+                  ? "bg-brand text-white shadow-surface"
+                  : "border border-border bg-surface text-muted hover:border-border-strong hover:bg-surface-hover hover:text-foreground"
               }`}
             >
               {dept.name}

@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { correctTransaction } from "@/lib/actions/corrections";
-import { Card, FormError } from "@/components/ui";
+import { Card, Field, FormError, TextInput } from "@/components/ui";
 
 export default function CorrectionForm({
   originalId,
@@ -18,15 +18,12 @@ export default function CorrectionForm({
   const delta = Number.isFinite(parsed) ? parsed - originalAmount : 0;
 
   return (
-    <Card>
-      <form action={formAction} className="space-y-3">
+    <Card raised>
+      <form action={formAction} className="space-y-4">
         <input type="hidden" name="originalId" value={originalId} />
 
-        <div>
-          <label htmlFor="correctedValue" className="block text-sm font-medium text-foreground">
-            What should this have been?
-          </label>
-          <input
+        <Field label="What should this have been?" htmlFor="correctedValue">
+          <TextInput
             id="correctedValue"
             name="correctedValue"
             type="number"
@@ -35,11 +32,10 @@ export default function CorrectionForm({
             required
             value={correctedValue}
             onChange={(e) => setCorrectedValue(e.target.value)}
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           />
-        </div>
+        </Field>
 
-        <div className="rounded-md bg-background px-3 py-2 text-sm">
+        <div className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm">
           <span className="text-muted">Correction amount: </span>
           <span className={`font-bold tabular-nums ${delta < 0 ? "text-negative" : "text-positive"}`}>
             {delta >= 0 ? "+" : ""}
@@ -47,25 +43,16 @@ export default function CorrectionForm({
           </span>
         </div>
 
-        <div>
-          <label htmlFor="reason" className="block text-sm font-medium text-foreground">
-            Reason for correction (required)
-          </label>
-          <input
-            id="reason"
-            name="reason"
-            required
-            placeholder="e.g. Entered 25 instead of 15"
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-          />
-        </div>
+        <Field label="Reason for correction (required)" htmlFor="reason">
+          <TextInput id="reason" name="reason" required placeholder="e.g. Entered 25 instead of 15" />
+        </Field>
 
         <FormError message={state.error} />
 
         <button
           type="submit"
           disabled={pending || delta === 0}
-          className="w-full rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-500 disabled:opacity-50"
+          className="focus-ring w-full rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-surface transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-violet-500"
         >
           {pending ? "Saving correction…" : "Save Correction"}
         </button>

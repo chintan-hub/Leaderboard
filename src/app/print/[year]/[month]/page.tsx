@@ -54,7 +54,10 @@ export default async function PrintLeaderboardPage({
     <div className="min-h-screen bg-[#efece6] py-8 print:bg-white print:py-0">
       {/* Screen-only preview chrome */}
       <div className="mx-auto mb-4 flex max-w-[210mm] items-center justify-between px-2 print:hidden">
-        <Link href={`/monthly?year=${year}&month=${month}`} className="text-sm font-semibold text-muted hover:text-brand">
+        <Link
+          href={`/monthly?year=${year}&month=${month}`}
+          className="focus-ring rounded text-sm font-semibold text-muted hover:text-brand"
+        >
           ← Back to Monthly Results
         </Link>
         <PrintButton />

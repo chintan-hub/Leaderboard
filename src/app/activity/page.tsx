@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { getRecentActivity } from "@/lib/queries";
 import { prisma } from "@/lib/db";
-import { Card, EmptyState, SectionTitle } from "@/components/ui";
+import { Card, EmptyState, PrimaryButton, SectionTitle } from "@/components/ui";
 
 const TYPE_LABEL: Record<string, string> = {
   PRODUCTION_COMPLETED: "Completed",
@@ -60,18 +60,18 @@ export default async function ActivityHistoryPage({
       </SectionTitle>
 
       <form
-        className="sticky top-14 z-10 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface/95 p-3 text-sm shadow-sm backdrop-blur"
+        className="sticky top-16 z-10 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface/95 p-3.5 shadow-surface backdrop-blur-md"
         method="get"
       >
         <div>
-          <label htmlFor="departmentId" className="block text-xs font-medium text-muted">
+          <label htmlFor="departmentId" className="mb-1 block text-xs font-semibold text-muted">
             Department
           </label>
           <select
             id="departmentId"
             name="departmentId"
             defaultValue={params.departmentId ?? ""}
-            className="mt-1 rounded-md border border-border px-3 py-1.5"
+            className="focus-ring rounded-lg border border-border bg-surface px-3 py-2 text-sm"
           >
             <option value="">All departments</option>
             {departments.map((d) => (
@@ -82,14 +82,14 @@ export default async function ActivityHistoryPage({
           </select>
         </div>
         <div>
-          <label htmlFor="employeeId" className="block text-xs font-medium text-muted">
+          <label htmlFor="employeeId" className="mb-1 block text-xs font-semibold text-muted">
             Employee
           </label>
           <select
             id="employeeId"
             name="employeeId"
             defaultValue={params.employeeId ?? ""}
-            className="mt-1 rounded-md border border-border px-3 py-1.5"
+            className="focus-ring rounded-lg border border-border bg-surface px-3 py-2 text-sm"
           >
             <option value="">All employees</option>
             {employees.map((e) => (
@@ -100,7 +100,7 @@ export default async function ActivityHistoryPage({
           </select>
         </div>
         <div>
-          <label htmlFor="date" className="block text-xs font-medium text-muted">
+          <label htmlFor="date" className="mb-1 block text-xs font-semibold text-muted">
             Date
           </label>
           <input
@@ -108,17 +108,17 @@ export default async function ActivityHistoryPage({
             name="date"
             type="date"
             defaultValue={params.date ?? ""}
-            className="mt-1 rounded-md border border-border px-3 py-1.5"
+            className="focus-ring rounded-lg border border-border bg-surface px-3 py-2 text-sm"
           />
         </div>
-        <button
-          type="submit"
-          className="rounded-md bg-brand px-4 py-1.5 font-semibold text-white hover:bg-brand-strong"
-        >
+        <PrimaryButton type="submit" className="px-4 py-2">
           Filter
-        </button>
+        </PrimaryButton>
         {filtered && (
-          <Link href="/activity" className="text-muted underline">
+          <Link
+            href="/activity"
+            className="focus-ring rounded-lg px-2 py-2 text-sm font-semibold text-muted underline hover:text-foreground"
+          >
             Clear filters
           </Link>
         )}
@@ -135,20 +135,20 @@ export default async function ActivityHistoryPage({
         />
       ) : (
         <Card className="overflow-x-auto p-0">
-          <table className="w-full min-w-[820px] text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">
+          <table className="data-table min-w-[820px]">
+            <thead>
               <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Employee</th>
-                <th className="px-4 py-3">Department</th>
-                <th className="px-4 py-3 text-right">Amount</th>
-                <th className="px-4 py-3">Reason</th>
-                <th className="px-4 py-3">Recorded by</th>
-                {admin && <th className="px-4 py-3" />}
+                <th>Date</th>
+                <th>Type</th>
+                <th>Employee</th>
+                <th>Department</th>
+                <th className="text-right">Amount</th>
+                <th>Reason</th>
+                <th>Recorded by</th>
+                {admin && <th />}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {activity.map((row) => {
                 const isCorrection = row.type === "CORRECTION";
                 const isNegative =

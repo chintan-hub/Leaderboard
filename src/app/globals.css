@@ -4,9 +4,11 @@
   /* Warm, premium neutrals — not stark clinical white/grey */
   --background: #faf9f6;
   --surface: #ffffff;
+  --surface-hover: #f6f4ef;
   --foreground: #211c17;
   --muted: #6b6157;
   --border: #e8e2d9;
+  --border-strong: #d8d0c3;
 
   /* Brand — a confident indigo, distinct from generic corporate blue */
   --brand: #4338ca;
@@ -33,9 +35,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
 
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
@@ -83,6 +87,79 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+}
+
+/* Shared card/surface elevation — one recipe reused everywhere so shadow
+   depth stays consistent instead of every component inventing its own. */
+.shadow-surface {
+  box-shadow:
+    0 1px 2px rgba(33, 28, 23, 0.04),
+    0 1px 1px rgba(33, 28, 23, 0.03),
+    0 0 0 1px rgba(33, 28, 23, 0.02);
+}
+.shadow-surface-raised {
+  box-shadow:
+    0 4px 10px -4px rgba(33, 28, 23, 0.1),
+    0 1px 2px rgba(33, 28, 23, 0.04),
+    0 0 0 1px rgba(33, 28, 23, 0.03);
+}
+
+/* Real <table> elements (Activity History today; available for any future
+   table) share one visual recipe: quiet uppercase header row, hairline row
+   separators, and a warm hover wash that reads as "row under the cursor"
+   without a heavy zebra pattern. */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+.data-table thead th {
+  padding: 0.75rem 1rem;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.data-table tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.data-table tbody tr {
+  transition: background-color 120ms ease;
+}
+.data-table tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* The recurring "<ul> of <li> rows inside a Card" pattern (leaderboards,
+   employee/department lists) gets the same hover + spacing rhythm as
+   .data-table rows without needing an actual <table>. */
+.list-row {
+  transition: background-color 120ms ease;
+}
+.list-row:hover {
+  background-color: var(--surface-hover);
+}
+
+/* One focus-visible treatment for every interactive control — inputs,
+   selects, buttons, links styled as controls — so keyboard focus is always
+   obvious and always looks the same. */
+.focus-ring {
+  outline: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.focus-ring:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint);
 }
 
 /* A4-sized print output. Everything else (hiding screen-only chrome,

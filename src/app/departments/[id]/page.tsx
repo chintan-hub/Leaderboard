@@ -33,7 +33,10 @@ export default async function DepartmentDrilldownPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/departments" className="text-sm font-semibold text-muted hover:text-brand">
+      <Link
+        href="/departments"
+        className="focus-ring inline-flex items-center gap-1 rounded text-sm font-semibold text-muted hover:text-brand"
+      >
         ← All Departments
       </Link>
 
@@ -41,7 +44,7 @@ export default async function DepartmentDrilldownPage({
         {department.name}
       </SectionTitle>
 
-      <Card>
+      <Card raised>
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex gap-8">
             <div>
@@ -71,7 +74,7 @@ export default async function DepartmentDrilldownPage({
       </Card>
 
       <div>
-        <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
           {department.name} employees this month
         </h3>
         {employees.length === 0 ? (
@@ -80,12 +83,12 @@ export default async function DepartmentDrilldownPage({
           <Card className="p-0">
             <ul className="divide-y divide-border">
               {employees.map((emp) => (
-                <li key={emp.employeeId} className="flex items-center justify-between gap-4 px-5 py-3">
+                <li key={emp.employeeId} className="list-row flex items-center justify-between gap-4 px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     <RankBadge rank={emp.rank} size="sm" />
                     <Link
                       href={`/employees/${emp.employeeId}`}
-                      className="font-bold text-foreground hover:text-brand hover:underline"
+                      className="focus-ring rounded font-bold text-foreground hover:text-brand hover:underline"
                     >
                       {emp.name}
                     </Link>

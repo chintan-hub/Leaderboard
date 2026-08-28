@@ -36,6 +36,7 @@ export function EmployeeLeaderboardPanel({
           {topThree.map((row) => (
             <Card
               key={row.employeeId}
+              raised
               className={
                 row.rank === 1
                   ? "border-gold/40 bg-gold-tint"
@@ -49,7 +50,7 @@ export function EmployeeLeaderboardPanel({
                 <div className="min-w-0">
                   <Link
                     href={`/employees/${row.employeeId}`}
-                    className="block truncate font-extrabold text-foreground hover:underline"
+                    className="focus-ring block truncate rounded font-extrabold text-foreground hover:underline"
                   >
                     {row.name}
                   </Link>
@@ -70,14 +71,17 @@ export function EmployeeLeaderboardPanel({
       <Card className="p-0">
         <ul className="divide-y divide-border">
           {rows.map((row) => (
-            <li key={row.employeeId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+            <li
+              key={row.employeeId}
+              className="list-row flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
+            >
               <div className="flex min-w-0 items-center gap-3">
                 <RankBadge rank={row.rank} size="sm" />
                 <MovementIndicator delta={row.movement?.delta ?? null} />
                 <div className="min-w-0">
                   <Link
                     href={`/employees/${row.employeeId}`}
-                    className="block truncate font-bold text-foreground hover:text-brand hover:underline"
+                    className="focus-ring block truncate rounded font-bold text-foreground hover:text-brand hover:underline"
                   >
                     {row.name}
                   </Link>
@@ -85,7 +89,7 @@ export function EmployeeLeaderboardPanel({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-right text-sm">
+              <div className="flex items-center gap-4 text-right text-sm sm:gap-5">
                 <div>
                   <div className="font-bold tabular-nums text-foreground">{row.summary.casesCompleted}</div>
                   <div className="text-[10px] uppercase text-muted">Completed</div>
@@ -137,13 +141,16 @@ export function DepartmentLeaderboardPanel({ rows }: { rows: DepartmentRankingRe
     <Card className="p-0">
       <ul className="divide-y divide-border">
         {rows.map((dept, i) => (
-          <li key={dept.departmentId} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+          <li
+            key={dept.departmentId}
+            className="list-row flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
+          >
             <div className="flex items-center gap-3">
               <RankBadge rank={i + 1} size="sm" />
               <div>
                 <Link
                   href={`/departments/${dept.departmentId}`}
-                  className="font-bold text-foreground hover:text-brand hover:underline"
+                  className="focus-ring rounded font-bold text-foreground hover:text-brand hover:underline"
                 >
                   {dept.departmentName}
                 </Link>

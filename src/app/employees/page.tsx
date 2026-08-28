@@ -30,13 +30,13 @@ export default async function EmployeesPage() {
             .filter((d) => d.employees.length > 0)
             .map((dept) => (
               <section key={dept.id}>
-                <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+                <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
                   {dept.name}
                 </h3>
-                <Card className="p-0">
+                <Card className="p-0" raised>
                   <ul className="divide-y divide-border">
                     {dept.employees.map((emp) => (
-                      <li key={emp.id} className="px-5 py-3">
+                      <li key={emp.id} className="list-row px-5 py-3.5">
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground">{emp.name}</span>
@@ -73,7 +73,7 @@ export default async function EmployeesPage() {
                         </div>
                         {admin && (
                           <details className="group">
-                            <summary className="cursor-pointer text-xs font-semibold text-muted hover:text-foreground">
+                            <summary className="focus-ring mt-1 inline-block cursor-pointer rounded text-xs font-semibold text-muted transition hover:text-foreground">
                               Edit
                             </summary>
                             <EditEmployeeForm

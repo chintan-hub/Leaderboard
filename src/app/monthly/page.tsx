@@ -49,20 +49,26 @@ export default async function MonthlyResultsPage({
         >
           Monthly Results
         </SectionTitle>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 text-sm font-semibold text-muted">
-            <Link href={`/monthly?year=${prev.year}&month=${prev.month}`} className="hover:text-brand">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1 text-sm font-semibold text-muted">
+            <Link
+              href={`/monthly?year=${prev.year}&month=${prev.month}`}
+              className="focus-ring rounded-md px-2.5 py-1.5 transition hover:bg-surface-hover hover:text-foreground"
+            >
               ← Prev
             </Link>
-            <span className="text-foreground">{monthLabel(year, month)}</span>
-            <Link href={`/monthly?year=${next.year}&month=${next.month}`} className="hover:text-brand">
+            <span className="px-2 text-foreground">{monthLabel(year, month)}</span>
+            <Link
+              href={`/monthly?year=${next.year}&month=${next.month}`}
+              className="focus-ring rounded-md px-2.5 py-1.5 transition hover:bg-surface-hover hover:text-foreground"
+            >
               Next →
             </Link>
           </div>
           <Link
             href={`/print/${year}/${month}`}
             target="_blank"
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-strong"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-surface transition hover:bg-brand-strong"
           >
             🖨 Print Leaderboard
           </Link>

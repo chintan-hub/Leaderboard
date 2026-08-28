@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createEmployee } from "@/lib/actions/employees";
-import { Card, FormError } from "@/components/ui";
+import { Card, Field, FormError, PrimaryButton, Select, TextInput } from "@/components/ui";
 
 export default function NewEmployeeForm({
   departments,
@@ -13,44 +13,23 @@ export default function NewEmployeeForm({
 
   return (
     <Card>
-      <form action={formAction} className="space-y-3">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground">
-            Employee name
-          </label>
-          <input
-            id="name"
-            name="name"
-            required
-            minLength={2}
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="departmentId" className="block text-sm font-medium text-foreground">
-            Department
-          </label>
-          <select
-            id="departmentId"
-            name="departmentId"
-            required
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-          >
+      <form action={formAction} className="space-y-4">
+        <Field label="Employee name" htmlFor="name">
+          <TextInput id="name" name="name" required minLength={2} />
+        </Field>
+        <Field label="Department" htmlFor="departmentId">
+          <Select id="departmentId" name="departmentId" required>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
         <FormError message={state.error} />
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
-        >
+        <PrimaryButton type="submit" disabled={pending}>
           {pending ? "Adding…" : "Add Employee"}
-        </button>
+        </PrimaryButton>
       </form>
     </Card>
   );

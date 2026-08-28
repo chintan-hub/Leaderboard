@@ -143,16 +143,16 @@ export default function BulkProductionForm({
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="p-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
+    <div className="space-y-5">
+      <Card className="p-0" raised>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-4">
           <div>
-            <h3 className="text-lg font-extrabold text-foreground">{department.name}</h3>
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">{boardDateLabel(date)}</p>
+            <h3 className="text-lg font-extrabold tracking-tight text-foreground">{department.name}</h3>
+            <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted">{boardDateLabel(date)}</p>
           </div>
-          <p className="text-sm font-semibold text-muted">
+          <span className="rounded-full bg-silver-tint px-3 py-1 text-xs font-bold text-muted">
             {recordedCount} of {employees.length} recorded today
-          </p>
+          </span>
         </div>
 
         {existingSummary && existingSummary.entryCount > 0 && (
@@ -165,7 +165,7 @@ export default function BulkProductionForm({
             </span>
             <Link
               href={`/activity?departmentId=${department.id}&date=${date}`}
-              className="whitespace-nowrap font-semibold underline"
+              className="focus-ring whitespace-nowrap rounded font-semibold underline"
             >
               View entries
             </Link>
@@ -175,13 +175,13 @@ export default function BulkProductionForm({
         <form onSubmit={handleSubmit}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">
+              <thead className="border-b border-border-strong text-[11px] font-bold uppercase tracking-[0.04em] text-muted">
                 <tr>
                   <th className="px-5 py-3">Employee</th>
-                  <th className="px-3 py-3 w-28">Completed</th>
-                  {department.reworkTrackingEnabled && <th className="px-3 py-3 w-28">Returned</th>}
+                  <th className="w-28 px-3 py-3">Completed</th>
+                  {department.reworkTrackingEnabled && <th className="w-28 px-3 py-3">Returned</th>}
                   {department.reworkTrackingEnabled && <th className="px-3 py-3">Return reason</th>}
-                  <th className="px-5 py-3 w-24 text-right">Net</th>
+                  <th className="w-24 px-5 py-3 text-right">Net</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -190,8 +190,8 @@ export default function BulkProductionForm({
                   const rework = Number(row.rework) || 0;
                   const status = dailyStatus[emp.id];
                   return (
-                    <tr key={emp.id}>
-                      <td className="px-5 py-2">
+                    <tr key={emp.id} className="transition-colors hover:bg-surface-hover">
+                      <td className="px-5 py-2.5">
                         <div className="flex items-center gap-2">
                           <span
                             aria-hidden
@@ -208,14 +208,14 @@ export default function BulkProductionForm({
                             {status.casesReturned > 0 ? `, ${status.casesReturned} returned` : ""} ·{" "}
                             <Link
                               href={`/activity?departmentId=${department.id}&date=${date}&employeeId=${emp.id}`}
-                              className="font-semibold text-brand underline"
+                              className="focus-ring rounded font-semibold text-brand underline"
                             >
                               Edit today&apos;s entry
                             </Link>
                           </p>
                         )}
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2.5">
                         <input
                           type="number"
                           inputMode="numeric"
@@ -224,11 +224,11 @@ export default function BulkProductionForm({
                           value={row.completed}
                           onChange={(e) => updateRow(emp.id, { completed: e.target.value })}
                           placeholder="0"
-                          className="w-20 rounded-md border border-border px-2 py-1.5 text-right tabular-nums"
+                          className="focus-ring w-20 rounded-lg border border-border bg-surface px-2 py-1.5 text-right tabular-nums"
                         />
                       </td>
                       {department.reworkTrackingEnabled && (
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2.5">
                           <input
                             type="number"
                             inputMode="numeric"
@@ -237,18 +237,18 @@ export default function BulkProductionForm({
                             value={row.rework}
                             onChange={(e) => updateRow(emp.id, { rework: e.target.value })}
                             placeholder="0"
-                            className="w-20 rounded-md border border-border px-2 py-1.5 text-right tabular-nums"
+                            className="focus-ring w-20 rounded-lg border border-border bg-surface px-2 py-1.5 text-right tabular-nums"
                           />
                         </td>
                       )}
                       {department.reworkTrackingEnabled && (
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2.5">
                           {rework > 0 ? (
                             <select
                               value={row.reasonIndex}
                               required
                               onChange={(e) => updateRow(emp.id, { reasonIndex: e.target.value })}
-                              className="w-full min-w-[220px] rounded-md border border-border px-2 py-1.5"
+                              className="focus-ring w-full min-w-[220px] rounded-lg border border-border bg-surface px-2 py-1.5"
                             >
                               <option value="" disabled>
                                 Select a reason…
@@ -266,7 +266,7 @@ export default function BulkProductionForm({
                         </td>
                       )}
                       <td
-                        className={`px-5 py-2 text-right font-bold tabular-nums ${
+                        className={`px-5 py-2.5 text-right font-bold tabular-nums ${
                           netFor(row, reasonOptions) < 0 ? "text-negative" : "text-foreground"
                         }`}
                       >
@@ -276,7 +276,7 @@ export default function BulkProductionForm({
                   );
                 })}
               </tbody>
-              <tfoot className="border-t-2 border-border text-sm font-bold">
+              <tfoot className="border-t-2 border-border-strong text-sm font-bold">
                 <tr>
                   <td className="px-5 py-3">Total</td>
                   <td className="px-3 py-3 tabular-nums">{totals.completed}</td>
@@ -290,7 +290,7 @@ export default function BulkProductionForm({
 
           <div className="space-y-3 border-t border-border px-5 py-4">
             <div>
-              <label htmlFor="note" className="block text-sm font-medium text-foreground">
+              <label htmlFor="note" className="block text-sm font-semibold text-foreground">
                 Note (optional — applies to completed cases entered above)
               </label>
               <input
@@ -298,13 +298,13 @@ export default function BulkProductionForm({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Daily production entry"
-                className="mt-1 w-full max-w-md rounded-md border border-border px-3 py-2 text-sm"
+                className="focus-ring mt-1.5 w-full max-w-md rounded-lg border border-border bg-surface px-3 py-2.5 text-sm"
               />
             </div>
 
             <FormError message={result.error} />
             {result.success && !result.error && (
-              <p className="rounded-md bg-positive-tint px-3 py-2 text-sm font-medium text-positive">
+              <p className="rounded-lg border border-positive/20 bg-positive-tint px-3 py-2 text-sm font-medium text-positive">
                 {result.created && result.created > 0
                   ? `Saved. ${result.created} entr${result.created === 1 ? "y" : "ies"} recorded.`
                   : "Already saved — nothing new to add."}
@@ -314,7 +314,7 @@ export default function BulkProductionForm({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-positive px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+              className="focus-ring rounded-lg bg-positive px-5 py-2.5 text-sm font-semibold text-white shadow-surface transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 hover:opacity-90"
             >
               {saving ? "Saving…" : `Save ${department.name} — ${date}`}
             </button>
@@ -323,8 +323,8 @@ export default function BulkProductionForm({
       </Card>
 
       <Card>
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">Today&apos;s Department Summary</p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+        <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted">Today&apos;s Department Summary</p>
+        <div className="mt-2.5 flex flex-wrap items-end justify-between gap-4">
           <div className="flex gap-6">
             <div>
               <div className="score-md text-xl text-foreground">{comparison.today.casesCompleted}</div>

@@ -26,9 +26,15 @@ export default async function DepartmentsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {departments.map((dept) => (
-          <Card key={dept.id} className="transition hover:border-brand/40 hover:shadow-md">
+          <Card
+            key={dept.id}
+            className="transition hover:-translate-y-0.5 hover:border-border-strong hover:shadow-surface-raised"
+          >
             <div className="flex items-start justify-between">
-              <Link href={`/departments/${dept.id}`} className="text-lg font-extrabold text-foreground hover:text-brand">
+              <Link
+                href={`/departments/${dept.id}`}
+                className="focus-ring rounded text-lg font-extrabold text-foreground hover:text-brand"
+              >
                 {dept.name}
               </Link>
               {!dept.isActive && <Badge tone="neutral">Inactive</Badge>}
@@ -36,7 +42,7 @@ export default async function DepartmentsPage() {
             <p className="mt-1 text-sm text-muted">
               {dept._count.employees} {dept._count.employees === 1 ? "employee" : "employees"}
             </p>
-            <dl className="mt-3 space-y-1 text-xs text-muted">
+            <dl className="mt-3 space-y-1.5 border-t border-border pt-3 text-xs text-muted">
               <div className="flex justify-between">
                 <dt>Scoring method</dt>
                 <dd className="text-right text-foreground/80">
@@ -58,8 +64,8 @@ export default async function DepartmentsPage() {
             </dl>
 
             {admin && (
-              <details className="mt-3 group">
-                <summary className="cursor-pointer text-xs font-semibold text-muted hover:text-brand">
+              <details className="group mt-3">
+                <summary className="focus-ring inline-block cursor-pointer rounded text-xs font-semibold text-muted transition hover:text-brand">
                   Edit settings
                 </summary>
                 <EditDepartmentForm

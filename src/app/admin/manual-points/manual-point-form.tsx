@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { recordManualPoint } from "@/lib/actions/manual-points";
-import { Card, FormError } from "@/components/ui";
+import { Card, Field, FormError, TextInput } from "@/components/ui";
 
 type Direction = "BONUS" | "DEDUCTION";
 
@@ -45,17 +45,17 @@ export default function ManualPointForm({
   }
 
   return (
-    <Card className="max-w-lg">
-      <form action={formAction} className="space-y-3">
+    <Card raised className="max-w-lg">
+      <form action={formAction} className="space-y-4">
         <input type="hidden" name="direction" value={direction} />
         <input type="hidden" name="batchId" value={batchId} />
 
-        <div className="flex gap-2 rounded-lg bg-silver-tint p-1">
+        <div className="flex gap-1 rounded-lg bg-silver-tint p-1">
           <button
             type="button"
             onClick={() => setDirection("BONUS")}
-            className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${
-              direction === "BONUS" ? "bg-white text-positive shadow-sm" : "text-muted"
+            className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
+              direction === "BONUS" ? "bg-white text-positive shadow-surface" : "text-muted hover:text-foreground"
             }`}
           >
             +1 Bonus
@@ -63,23 +63,20 @@ export default function ManualPointForm({
           <button
             type="button"
             onClick={() => setDirection("DEDUCTION")}
-            className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${
-              direction === "DEDUCTION" ? "bg-white text-negative shadow-sm" : "text-muted"
+            className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
+              direction === "DEDUCTION" ? "bg-white text-negative shadow-surface" : "text-muted hover:text-foreground"
             }`}
           >
             −1 Deduction
           </button>
         </div>
 
-        <div>
-          <label htmlFor="employeeId" className="block text-sm font-medium text-foreground">
-            Employee
-          </label>
+        <Field label="Employee" htmlFor="employeeId">
           <select
             id="employeeId"
             name="employeeId"
             required
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+            className="focus-ring w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground"
           >
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
@@ -87,27 +84,20 @@ export default function ManualPointForm({
               </option>
             ))}
           </select>
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="eventDate" className="block text-sm font-medium text-foreground">
-            Date
-          </label>
-          <input
+        <Field label="Date" htmlFor="eventDate">
+          <TextInput
             id="eventDate"
             name="eventDate"
             type="date"
             required
             defaultValue={new Date().toISOString().slice(0, 10)}
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="reason" className="block text-sm font-medium text-foreground">
-            Reason (required)
-          </label>
-          <input
+        <Field label="Reason (required)" htmlFor="reason">
+          <TextInput
             id="reason"
             name="reason"
             required
@@ -116,16 +106,15 @@ export default function ManualPointForm({
                 ? "e.g. Helped another department with urgent work"
                 : "e.g. Failed to update required case information"
             }
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           />
-        </div>
+        </Field>
 
         <FormError message={state.error} />
 
         <button
           type="submit"
           disabled={pending}
-          className={`w-full rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 ${
+          className={`focus-ring w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-surface transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
             direction === "BONUS" ? "bg-positive hover:opacity-90" : "bg-negative hover:opacity-90"
           }`}
         >

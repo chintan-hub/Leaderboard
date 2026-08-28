@@ -19,7 +19,7 @@ export default function DeactivateButton({
       <button
         type="submit"
         disabled={pending}
-        className={`rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-50 ${
+        className={`focus-ring rounded-lg px-3 py-1.5 text-sm font-semibold transition disabled:opacity-50 ${
           isActive
             ? "text-negative hover:bg-negative-tint"
             : "text-positive hover:bg-positive-tint"

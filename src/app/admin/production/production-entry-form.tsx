@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { recordProductionCompleted, recordProductionRework } from "@/lib/actions/production";
-import { Card, FormError } from "@/components/ui";
+import { Card, Field, FormError, Select, TextInput } from "@/components/ui";
 
 type Mode = "COMPLETED" | "REWORK";
 
@@ -57,13 +57,13 @@ export default function ProductionEntryForm({
   }
 
   return (
-    <Card className="max-w-lg">
-      <div className="mb-4 flex gap-2 rounded-lg bg-silver-tint p-1">
+    <Card raised className="max-w-lg">
+      <div className="mb-4 flex gap-1 rounded-lg bg-silver-tint p-1">
         <button
           type="button"
           onClick={() => setMode("COMPLETED")}
-          className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${
-            mode === "COMPLETED" ? "bg-white shadow-sm text-positive" : "text-muted"
+          className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
+            mode === "COMPLETED" ? "bg-white text-positive shadow-surface" : "text-muted hover:text-foreground"
           }`}
         >
           + Completed
@@ -71,8 +71,8 @@ export default function ProductionEntryForm({
         <button
           type="button"
           onClick={() => setMode("REWORK")}
-          className={`flex-1 rounded-md py-2 text-sm font-semibold transition ${
-            mode === "REWORK" ? "bg-white shadow-sm text-negative" : "text-muted"
+          className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
+            mode === "REWORK" ? "bg-white text-negative shadow-surface" : "text-muted hover:text-foreground"
           }`}
         >
           − Returned
@@ -80,7 +80,7 @@ export default function ProductionEntryForm({
       </div>
 
       {mode === "COMPLETED" ? (
-        <form key="completed" action={completedAction} className="space-y-3">
+        <form key="completed" action={completedAction} className="space-y-4">
           <input type="hidden" name="batchId" value={completedBatchId} />
           <EmployeeSelect employees={employees} />
           <CasesInput />
@@ -90,37 +90,31 @@ export default function ProductionEntryForm({
           <button
             type="submit"
             disabled={completedPending}
-            className="w-full rounded-md bg-positive px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            className="focus-ring w-full rounded-lg bg-positive px-4 py-2.5 text-sm font-semibold text-white shadow-surface transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 hover:opacity-90"
           >
             {completedPending ? "Saving…" : "Log Completed Cases"}
           </button>
         </form>
       ) : (
-        <form key="rework" action={reworkAction} className="space-y-3">
+        <form key="rework" action={reworkAction} className="space-y-4">
           <input type="hidden" name="batchId" value={reworkBatchId} />
           <EmployeeSelect employees={employees} />
           <CasesInput />
-          <div>
-            <label className="block text-sm font-medium text-foreground">Responsibility</label>
-            <select
-              name="responsibility"
-              required
-              defaultValue="DEPARTMENT_FAULT"
-              className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-            >
+          <Field label="Responsibility">
+            <Select name="responsibility" required defaultValue="DEPARTMENT_FAULT">
               <option value="DEPARTMENT_FAULT">Department-caused (deducts from score)</option>
               <option value="EXTERNAL_NOT_FAULT">
                 External / not the department&apos;s fault (logged only, no deduction)
               </option>
-            </select>
-          </div>
+            </Select>
+          </Field>
           <DateInput />
           <ReasonInput placeholder="e.g. Margin chipped during finishing" />
           <FormError message={reworkState.error} />
           <button
             type="submit"
             disabled={reworkPending}
-            className="w-full rounded-md bg-negative px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            className="focus-ring w-full rounded-lg bg-negative px-4 py-2.5 text-sm font-semibold text-white shadow-surface transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 hover:opacity-90"
           >
             {reworkPending ? "Saving…" : "Log Returned Case"}
           </button>
@@ -132,77 +126,38 @@ export default function ProductionEntryForm({
 
 function EmployeeSelect({ employees }: { employees: { id: string; label: string }[] }) {
   return (
-    <div>
-      <label htmlFor="employeeId" className="block text-sm font-medium text-foreground">
-        Employee
-      </label>
-      <select
-        id="employeeId"
-        name="employeeId"
-        required
-        className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-      >
+    <Field label="Employee" htmlFor="employeeId">
+      <Select id="employeeId" name="employeeId" required>
         {employees.map((e) => (
           <option key={e.id} value={e.id}>
             {e.label}
           </option>
         ))}
-      </select>
-    </div>
+      </Select>
+    </Field>
   );
 }
 
 function CasesInput() {
   return (
-    <div>
-      <label htmlFor="cases" className="block text-sm font-medium text-foreground">
-        Number of cases
-      </label>
-      <input
-        id="cases"
-        name="cases"
-        type="number"
-        min={1}
-        step={1}
-        required
-        defaultValue={1}
-        className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-      />
-    </div>
+    <Field label="Number of cases" htmlFor="cases">
+      <TextInput id="cases" name="cases" type="number" min={1} step={1} required defaultValue={1} />
+    </Field>
   );
 }
 
 function DateInput() {
   return (
-    <div>
-      <label htmlFor="eventDate" className="block text-sm font-medium text-foreground">
-        Date
-      </label>
-      <input
-        id="eventDate"
-        name="eventDate"
-        type="date"
-        required
-        defaultValue={todayIso()}
-        className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-      />
-    </div>
+    <Field label="Date" htmlFor="eventDate">
+      <TextInput id="eventDate" name="eventDate" type="date" required defaultValue={todayIso()} />
+    </Field>
   );
 }
 
 function ReasonInput({ placeholder }: { placeholder: string }) {
   return (
-    <div>
-      <label htmlFor="reason" className="block text-sm font-medium text-foreground">
-        Note
-      </label>
-      <input
-        id="reason"
-        name="reason"
-        required
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-      />
-    </div>
+    <Field label="Note" htmlFor="reason">
+      <TextInput id="reason" name="reason" required placeholder={placeholder} />
+    </Field>
   );
 }

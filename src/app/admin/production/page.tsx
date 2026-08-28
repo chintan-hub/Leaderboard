@@ -54,7 +54,7 @@ export default async function ProductionEntryPage({
           <Link
             href={`/print/production/${date}`}
             target="_blank"
-            className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-muted transition hover:border-brand hover:text-brand"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-muted transition hover:border-brand hover:text-brand"
           >
             🖨 Print {date === todayIsoUTC() ? "Today's" : "This Day's"} Production
           </Link>
@@ -93,7 +93,7 @@ export default async function ProductionEntryPage({
       )}
 
       <details className="group">
-        <summary className="cursor-pointer text-sm font-semibold text-muted hover:text-brand">
+        <summary className="focus-ring inline-block cursor-pointer rounded text-sm font-semibold text-muted transition hover:text-brand">
           Need a single entry with a custom note instead?
         </summary>
         <div className="mt-3">

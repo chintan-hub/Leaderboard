@@ -18,7 +18,7 @@ export default async function EmployeeDetailPage({
     <div className="space-y-6">
       <Link
         href={`/departments/${employee.departmentId}`}
-        className="text-sm font-semibold text-muted hover:text-brand"
+        className="focus-ring inline-flex items-center gap-1 rounded text-sm font-semibold text-muted hover:text-brand"
       >
         ← {employee.departmentName}
       </Link>
@@ -31,7 +31,7 @@ export default async function EmployeeDetailPage({
       </div>
 
       <div>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Today</h3>
+        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Today</h3>
         {today.casesCompleted === 0 && today.casesReturned === 0 ? (
           <Card className="py-4">
             <p className="text-sm text-muted">No production recorded for today yet.</p>
@@ -59,8 +59,8 @@ export default async function EmployeeDetailPage({
       </div>
 
       <div>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">All-Time</h3>
-        <Card>
+        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">All-Time</h3>
+        <Card raised>
           <div className="flex flex-wrap gap-x-10 gap-y-4">
             <div>
               <div className="score-lg text-2xl text-foreground">{summary.casesCompleted}</div>
@@ -99,7 +99,7 @@ export default async function EmployeeDetailPage({
       </div>
 
       <div>
-        <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Daily history</h3>
+        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Daily history</h3>
         {employee.dailyHistory.length === 0 ? (
           <EmptyState title="No production recorded yet" description="Daily history will appear here once production is logged." />
         ) : (
@@ -108,7 +108,7 @@ export default async function EmployeeDetailPage({
               {employee.dailyHistory.map((day) => (
                 <li
                   key={day.date.toISOString()}
-                  className="flex items-center justify-between px-5 py-2.5 text-sm"
+                  className="list-row flex items-center justify-between px-5 py-3 text-sm"
                 >
                   <span className="font-semibold text-muted">
                     {day.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}

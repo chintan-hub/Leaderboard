@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateDepartment } from "@/lib/actions/departments";
-import { FormError } from "@/components/ui";
+import { Field, FormError, PrimaryButton, TextInput } from "@/components/ui";
 
 interface DepartmentSettings {
   id: string;
@@ -36,62 +36,56 @@ export default function EditDepartmentForm({ department }: { department: Departm
         value={reworkTrackingEnabled ? "true" : "false"}
       />
 
-      <div>
-        <label htmlFor={`name-${department.id}`} className="block text-sm font-medium text-foreground">
-          Department name
-        </label>
-        <input
-          id={`name-${department.id}`}
-          name="name"
-          required
-          minLength={2}
-          defaultValue={department.name}
-          className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
-        />
-      </div>
+      <Field label="Department name" htmlFor={`name-${department.id}`}>
+        <TextInput id={`name-${department.id}`} name="name" required minLength={2} defaultValue={department.name} />
+      </Field>
 
       <fieldset>
-        <legend className="text-sm font-medium text-foreground">Scoring Method</legend>
-        <div className="mt-1 space-y-1.5">
-          <label className="flex items-center gap-2 text-sm text-foreground">
+        <legend className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">Scoring Method</legend>
+        <div className="space-y-1.5">
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border p-2.5 text-sm text-foreground transition hover:border-border-strong hover:bg-surface-hover has-checked:border-brand has-checked:bg-brand-tint">
             <input
               type="radio"
               name="scoringRule"
               value="NET_PRODUCTION"
               defaultChecked={department.scoringRule === "NET_PRODUCTION"}
+              className="mt-0.5 accent-brand"
             />
-            Net Production — completed cases minus department-caused returns
+            <span>Net Production — completed cases minus department-caused returns</span>
           </label>
-          <label className="flex items-center gap-2 text-sm text-foreground">
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border p-2.5 text-sm text-foreground transition hover:border-border-strong hover:bg-surface-hover has-checked:border-brand has-checked:bg-brand-tint">
             <input
               type="radio"
               name="scoringRule"
               value="MANUAL_POINTS_ONLY"
               defaultChecked={department.scoringRule === "MANUAL_POINTS_ONLY"}
+              className="mt-0.5 accent-brand"
             />
-            Manual Points Only — production is logged but doesn&apos;t affect the score
+            <span>Manual Points Only — production is logged but doesn&apos;t affect the score</span>
           </label>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend className="text-sm font-medium text-foreground">Department Ranking</legend>
-        <div className="mt-1 space-y-1.5">
-          <label className="flex items-center gap-2 text-sm text-foreground">
+        <legend className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted">Department Ranking</legend>
+        <div className="space-y-1.5">
+          <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-border p-2.5 text-sm text-foreground transition hover:border-border-strong hover:bg-surface-hover has-checked:border-brand has-checked:bg-brand-tint">
             <input
               type="radio"
               name="rankingMetric"
               value="AVG_NET_PER_EMPLOYEE"
               defaultChecked={department.rankingMetric === "AVG_NET_PER_EMPLOYEE"}
+              className="accent-brand"
             />
             Average Net Production per Employee
           </label>
-          <label className="flex items-center gap-2 text-sm text-foreground">
+          <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-border p-2.5 text-sm text-foreground transition hover:border-border-strong hover:bg-surface-hover has-checked:border-brand has-checked:bg-brand-tint">
             <input
               type="radio"
               name="rankingMetric"
               value="TOTAL_NET_PRODUCTION"
               defaultChecked={department.rankingMetric === "TOTAL_NET_PRODUCTION"}
+              className="accent-brand"
             />
             Total Net Production
           </label>
@@ -99,19 +93,21 @@ export default function EditDepartmentForm({ department }: { department: Departm
       </fieldset>
 
       <div className="space-y-1.5">
-        <label className="flex items-center gap-2 text-sm text-foreground">
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground">
           <input
             type="checkbox"
             checked={productionTrackingEnabled}
             onChange={(e) => setProductionTrackingEnabled(e.target.checked)}
+            className="h-4 w-4 accent-brand"
           />
           Production tracking enabled
         </label>
-        <label className="flex items-center gap-2 text-sm text-foreground">
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground">
           <input
             type="checkbox"
             checked={reworkTrackingEnabled}
             onChange={(e) => setReworkTrackingEnabled(e.target.checked)}
+            className="h-4 w-4 accent-brand"
           />
           Rework tracking enabled
         </label>
@@ -119,13 +115,9 @@ export default function EditDepartmentForm({ department }: { department: Departm
 
       <FormError message={state.error} />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
-      >
+      <PrimaryButton type="submit" disabled={pending}>
         {pending ? "Saving…" : "Save Settings"}
-      </button>
+      </PrimaryButton>
     </form>
   );
 }

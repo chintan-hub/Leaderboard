@@ -3,13 +3,16 @@ import type { ReactNode } from "react";
 export function Card({
   children,
   className = "",
+  raised = false,
 }: {
   children: ReactNode;
   className?: string;
+  /** Slightly deeper shadow for cards that should visually "lead" the page (e.g. a hero card). */
+  raised?: boolean;
 }) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(33,28,23,0.04),0_8px_20px_-14px_rgba(33,28,23,0.25)] ${className}`}
+      className={`rounded-xl border border-border bg-surface p-5 ${raised ? "shadow-surface-raised" : "shadow-surface"} ${className}`}
     >
       {children}
     </div>
@@ -21,22 +24,24 @@ export function SectionTitle({
   subtitle,
   eyebrow,
   action,
+  className = "",
 }: {
   children: ReactNode;
   subtitle?: string;
   eyebrow?: string;
   action?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+    <div className={`mb-5 flex flex-wrap items-end justify-between gap-3 ${className}`}>
       <div>
         {eyebrow && (
-          <p className="mb-1 text-xs font-bold uppercase tracking-wider text-brand">{eyebrow}</p>
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-brand">{eyebrow}</p>
         )}
-        <h2 className="text-xl font-extrabold tracking-tight text-foreground">{children}</h2>
-        {subtitle && <p className="mt-0.5 text-sm text-muted">{subtitle}</p>}
+        <h2 className="text-2xl font-extrabold tracking-tight text-foreground">{children}</h2>
+        {subtitle && <p className="mt-1 text-sm leading-relaxed text-muted">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
     </div>
   );
 }
@@ -55,7 +60,7 @@ export function BigNumber({
   return (
     <div>
       <div className={`score-lg text-3xl ${toneClass}`}>{value}</div>
-      <div className="text-xs font-bold uppercase tracking-wide text-muted">{label}</div>
+      <div className="mt-0.5 text-xs font-bold uppercase tracking-wide text-muted">{label}</div>
     </div>
   );
 }
@@ -70,9 +75,9 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-white/60 px-6 py-10 text-center">
+    <div className="rounded-xl border border-dashed border-border-strong bg-surface/60 px-6 py-12 text-center">
       <p className="font-bold text-foreground">{title}</p>
-      <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{description}</p>
+      <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">{description}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -81,8 +86,22 @@ export function EmptyState({
 export function FormError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className="rounded-lg bg-negative-tint px-3 py-2 text-sm font-medium text-negative">
-      {message}
+    <p className="flex items-start gap-2 rounded-lg border border-negative/20 bg-negative-tint px-3 py-2 text-sm font-medium text-negative">
+      <span aria-hidden className="mt-0.5 text-xs">
+        ⚠
+      </span>
+      <span>{message}</span>
+    </p>
+  );
+}
+
+export function FormSuccess({ message }: { message: string }) {
+  return (
+    <p className="flex items-start gap-2 rounded-lg border border-positive/20 bg-positive-tint px-3 py-2 text-sm font-medium text-positive">
+      <span aria-hidden className="mt-0.5 text-xs">
+        ✓
+      </span>
+      <span>{message}</span>
     </p>
   );
 }
@@ -212,10 +231,99 @@ export function PrimaryButton({
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={`rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-strong disabled:opacity-50 ${className}`}
+      className={`focus-ring inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-surface transition hover:bg-brand-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${className}`}
       {...props}
     >
       {children}
     </button>
+  );
+}
+
+export function SecondaryButton({
+  children,
+  className = "",
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      className={`focus-ring inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * Base text/number/date input styling shared by every form in the app.
+ * Plain `<input>` still works fine for callers that need uncontrolled
+ * defaults or native events — this only centralizes the visual recipe
+ * (sizing, border, focus ring) so it can't drift between forms.
+ */
+export function TextInput({
+  className = "",
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      className={`focus-ring w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted/60 ${className}`}
+      {...props}
+    />
+  );
+}
+
+export function Select({
+  className = "",
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      className={`focus-ring w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground ${className}`}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+}
+
+export function FieldLabel({
+  children,
+  htmlFor,
+  hint,
+}: {
+  children: ReactNode;
+  htmlFor?: string;
+  hint?: string;
+}) {
+  return (
+    <div className="mb-1.5 flex items-baseline justify-between gap-2">
+      <label htmlFor={htmlFor} className="text-sm font-semibold text-foreground">
+        {children}
+      </label>
+      {hint && <span className="text-xs text-muted">{hint}</span>}
+    </div>
+  );
+}
+
+/** Label + control wrapper — the shape every form field in the app follows. */
+export function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: ReactNode;
+  htmlFor?: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <FieldLabel htmlFor={htmlFor} hint={hint}>
+        {label}
+      </FieldLabel>
+      {children}
+    </div>
   );
 }

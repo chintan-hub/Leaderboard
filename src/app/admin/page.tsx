@@ -33,11 +33,13 @@ export default async function AdminHomePage() {
       </SectionTitle>
       <div className="grid gap-4 sm:grid-cols-3">
         {TOOLS.map((tool) => (
-          <Link key={tool.href} href={tool.href}>
-            <Card className="h-full transition hover:border-border hover:shadow-md">
-              <div className="text-2xl">{tool.icon}</div>
-              <h3 className="mt-2 font-bold text-foreground">{tool.title}</h3>
-              <p className="mt-1 text-sm text-muted">{tool.description}</p>
+          <Link key={tool.href} href={tool.href} className="focus-ring block rounded-xl">
+            <Card className="h-full transition hover:-translate-y-0.5 hover:border-border-strong hover:shadow-surface-raised">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-tint text-xl">
+                {tool.icon}
+              </div>
+              <h3 className="mt-3 font-bold text-foreground">{tool.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{tool.description}</p>
             </Card>
           </Link>
         ))}

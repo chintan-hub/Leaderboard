@@ -35,10 +35,10 @@ export default async function CorrectTransactionPage({
       </SectionTitle>
 
       <Card>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-muted">
           Original entry (unchanged, stays in the audit trail)
         </p>
-        <div className="mt-2 space-y-1 text-sm">
+        <div className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted">Employee</span>
             <span className="font-semibold text-foreground">{original.employee.name}</span>
@@ -90,7 +90,10 @@ export default async function CorrectTransactionPage({
         <CorrectionForm originalId={original.id} originalAmount={originalAmount} />
       )}
 
-      <Link href="/activity" className="inline-block text-sm font-semibold text-muted underline">
+      <Link
+        href="/activity"
+        className="focus-ring inline-block rounded text-sm font-semibold text-muted underline"
+      >
         ← Back to Activity History
       </Link>
     </div>
