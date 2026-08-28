@@ -1,0 +1,163 @@
+// Dental Lab Leaderboard — data model
+//
+// Core idea: every score-changing event (completed case, employee-caused
+// return, manual +1/-1) is one immutable row in ScoreTransaction. Nothing
+// else stores a running total — all scores are derived by summing this
+// ledger, so "why does this employee have 87 points" is always answerable
+// by listing their transactions.
+//
+// SCORING UNIT: 1 case = 1 unit, regardless of how many teeth it contains.
+// A 32-tooth case and a 1-tooth case are both worth exactly 1. The number
+// of teeth in a case is not tracked anywhere in this schema — only case
+// counts. See src/lib/scoring/score.ts for the authoritative calculation.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// The single Admin account (see src/lib/auth). Modeled as a table rather
+// than an env-var credential so the auth layer can be swapped for
+// multi-account auth later without a schema change.
+model Admin {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  transactions ScoreTransaction[]
+}
+
+// Departments are configurable, not hard-coded. scoringRule and
+// rankingMetric are keys resolved against a registry in
+// src/lib/scoring/rules.ts, so new department-specific formulas can be
+// added in code without a migration.
+model Department {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  scoringRule   String   @default("NET_PRODUCTION")
+  rankingMetric String   @default("AVG_NET_PER_EMPLOYEE")
+  // Whether this department logs production at all, and whether returned
+  // cases are tracked separately from completed ones. Both default on
+  // (matches every initial department); turning productionTrackingEnabled
+  // off hides the department from Production Entry, turning
+  // reworkTrackingEnabled off hides just the returned-case column/field.
+  productionTrackingEnabled Boolean @default(true)
+  reworkTrackingEnabled     Boolean @default(true)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  employees    Employee[]
+  transactions ScoreTransaction[]
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  name         String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  isActive     Boolean  @default(true)
+  joinedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  transactions ScoreTransaction[]
+
+  @@index([departmentId])
+}
+
+enum TransactionType {
+  PRODUCTION_COMPLETED
+  PRODUCTION_REWORK
+  MANUAL_BONUS
+  MANUAL_DEDUCTION
+  // A signed adjustment correcting a mistake in an earlier transaction.
+  // Never edits or removes the original — see correctsTransactionId below.
+  CORRECTION
+}
+
+// Only meaningful for PRODUCTION_REWORK (a returned case). Determines
+// whether the return actually deducts from the score — e.g. a
+// doctor-requested change is logged for transparency but must NOT penalize
+// the employee.
+enum ReworkResponsibility {
+  DEPARTMENT_FAULT
+  EXTERNAL_NOT_FAULT
+}
+
+// Only meaningful for type CORRECTION. Identifies which underlying counter
+// the correction's signed delta (stored in `points`) adjusts — derived
+// automatically from the transaction being corrected, never chosen freely.
+enum CorrectionTarget {
+  COMPLETED_CASES
+  CASES_RETURNED
+  CASES_RETURNED_EXTERNAL
+  MANUAL_BONUS
+  MANUAL_DEDUCTION
+}
+
+// The append-only ledger. Every score-changing action is one row here.
+// Rows are never edited or deleted from the UI — a mistake is fixed by
+// adding a new correcting transaction that references the original via
+// correctsTransactionId, keeping full history intact.
+model ScoreTransaction {
+  id     String @id @default(cuid())
+  type   TransactionType
+
+  employeeId   String
+  employee     Employee   @relation(fields: [employeeId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  // Case count for PRODUCTION_* rows (always a positive integer; sign is
+  // determined by `type`, not stored). 1 case = 1 unit regardless of how
+  // many teeth it contains — teeth are never counted here. Null for
+  // MANUAL_* rows.
+  cases Int?
+
+  // Signed point delta for MANUAL_* rows: +1 or -1. Null for PRODUCTION_* rows.
+  points Int?
+
+  // Required only for PRODUCTION_REWORK.
+  responsibility ReworkResponsibility?
+
+  // Only set for type CORRECTION — see CorrectionTarget above. `points`
+  // carries the signed delta in this case (may be negative).
+  correctionTarget CorrectionTarget?
+
+  // Always required — no unexplained score changes, production or manual.
+  reason String
+
+  // The calendar date the work/event happened on. This drives monthly
+  // bucketing for Employee of the Month, independent of when it was entered.
+  // A correction reuses the ORIGINAL transaction's eventDate so it
+  // retroactively fixes the correct month, even if entered later.
+  eventDate DateTime
+
+  createdAt DateTime @default(now())
+
+  createdByAdminId String
+  createdByAdmin   Admin  @relation(fields: [createdByAdminId], references: [id])
+
+  // Self-relation for corrections: a new transaction can point back at the
+  // one it corrects. The original row is left untouched.
+  correctsTransactionId String?           @unique
+  correctsTransaction   ScoreTransaction? @relation("Correction", fields: [correctsTransactionId], references: [id])
+  correctedBy           ScoreTransaction? @relation("Correction")
+
+  // Idempotency key: a bulk (or single) save stamps every row it creates
+  // with the same batchId. If a submission is retried/double-clicked with
+  // the same key, the action detects existing rows and skips re-creating
+  // them instead of silently duplicating production.
+  batchId String?
+
+  @@index([employeeId])
+  @@index([departmentId])
+  @@index([eventDate])
+  @@index([batchId])
+}

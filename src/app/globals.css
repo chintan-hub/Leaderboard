@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  /* Warm, premium neutrals — not stark clinical white/grey */
+  --background: #faf9f6;
+  --surface: #ffffff;
+  --foreground: #211c17;
+  --muted: #6b6157;
+  --border: #e8e2d9;
+
+  /* Brand — a confident indigo, distinct from generic corporate blue */
+  --brand: #4338ca;
+  --brand-strong: #362da3;
+  --brand-tint: #eef0fd;
+
+  /* Rank accents */
+  --gold: #b45309;
+  --gold-tint: #fff7e6;
+  --silver: #52525b;
+  --silver-tint: #f4f4f5;
+  --bronze: #9a5b2e;
+  --bronze-tint: #fdf2e9;
+
+  /* Score semantics */
+  --positive: #047857;
+  --positive-tint: #ecfdf5;
+  --negative: #b91c1c;
+  --negative-tint: #fef2f2;
+  --info: #b45309;
+  --info-tint: #fffbeb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-tint: var(--brand-tint);
+
+  --color-gold: var(--gold);
+  --color-gold-tint: var(--gold-tint);
+  --color-silver: var(--silver);
+  --color-silver-tint: var(--silver-tint);
+  --color-bronze: var(--bronze);
+  --color-bronze-tint: var(--bronze-tint);
+
+  --color-positive: var(--positive);
+  --color-positive-tint: var(--positive-tint);
+  --color-negative: var(--negative);
+  --color-negative-tint: var(--negative-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* A restrained, reusable set of "score typography" utilities so every
+   screen renders numbers with the same weight and rhythm instead of ad-hoc
+   text-3xl/text-4xl scattered across components. */
+.score-hero {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.score-lg {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.score-md {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* A4-sized print output. Everything else (hiding screen-only chrome,
+   avoiding awkward row breaks) uses Tailwind's built-in print:/break-inside
+   utilities directly in markup. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body {
+    background: #fff !important;
+  }
+}
