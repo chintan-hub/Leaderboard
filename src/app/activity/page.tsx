@@ -53,9 +53,25 @@ export default async function ActivityHistoryPage({
 
   const filtered = Boolean(params.departmentId || params.employeeId || params.date);
 
+  const exportParams = new URLSearchParams();
+  if (params.departmentId) exportParams.set("departmentId", params.departmentId);
+  if (params.employeeId) exportParams.set("employeeId", params.employeeId);
+  if (params.date) exportParams.set("date", params.date);
+  const exportHref = `/api/export/activity${exportParams.size > 0 ? `?${exportParams}` : ""}`;
+
   return (
     <div className="space-y-6">
-      <SectionTitle subtitle="Every score-changing event, immutable and fully traceable. Corrections appear as new entries, never silent edits.">
+      <SectionTitle
+        subtitle="Every score-changing event, immutable and fully traceable. Corrections appear as new entries, never silent edits."
+        action={
+          <Link
+            href={exportHref}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
+          >
+            ⬇ Export Excel
+          </Link>
+        }
+      >
         Activity History
       </SectionTitle>
 

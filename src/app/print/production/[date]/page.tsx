@@ -53,11 +53,10 @@ export default async function PrintTodaysProductionPage({
         {/* Header */}
         <header className="flex items-end justify-between border-b-2 border-[#1a1712] pb-3">
           <div>
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
-              <span>🦷</span>
-              <span>DentoCrafts Lab Leaderboard</span>
-            </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight">Lab Production</h1>
+            <Link href="/" className="inline-block">
+              <img src="/dentocrafts-logo.png" alt="DentoCrafts Digital Dental Lab" className="h-8 w-auto" />
+            </Link>
+            <h1 className="mt-2 text-3xl font-black tracking-tight">Lab Production</h1>
           </div>
           <div className="text-right text-xs">
             <div className="text-lg font-extrabold tracking-wide">{dateLabel(date)}</div>

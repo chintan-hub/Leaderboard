@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  getDepartmentLeaderboard,
-  getEmployeeLeaderboard,
-  getEmployeeOfMonth,
-} from "@/lib/queries";
+import { getDepartmentLeaderboard, getEmployeeLeaderboard } from "@/lib/queries";
 import PrintButton from "../../print-button";
 
 function monthLabel(year: number, month: number): string {
@@ -44,8 +40,7 @@ export default async function PrintLeaderboardPage({
     notFound();
   }
 
-  const [eom, employees, departments] = await Promise.all([
-    getEmployeeOfMonth(year, month),
+  const [employees, departments] = await Promise.all([
     getEmployeeLeaderboard({ year, month }),
     getDepartmentLeaderboard({ year, month }),
   ]);
@@ -68,54 +63,16 @@ export default async function PrintLeaderboardPage({
         {/* Header */}
         <header className="flex items-end justify-between border-b-2 border-[#1a1712] pb-3">
           <div>
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
-              <span>🦷</span>
-              <span>DentoCrafts Lab Leaderboard</span>
-            </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight">Lab Leaderboard</h1>
+            <Link href="/" className="inline-block">
+              <img src="/dentocrafts-logo.png" alt="DentoCrafts Digital Dental Lab" className="h-8 w-auto" />
+            </Link>
+            <h1 className="mt-2 text-3xl font-black tracking-tight">Lab Leaderboard</h1>
           </div>
           <div className="text-right text-xs">
             <div className="text-lg font-extrabold tracking-wide">{monthLabel(year, month)}</div>
             <div className="text-[#6b6157]">Generated on {generatedOnLabel()}</div>
           </div>
         </header>
-
-        {/* Employee of the Month — poster treatment */}
-        {eom.status === "winner" && (
-          <section className="my-6 break-inside-avoid rounded-lg border-2 border-[#b45309] bg-[#fff7e6] px-6 py-6 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#b45309]">
-              Employee of the Month
-            </p>
-            <p className="mt-3 text-3xl font-black tracking-tight">
-              {eom.employeeNames[eom.winner.employeeId]}
-            </p>
-            <p className="mt-0.5 text-sm font-bold uppercase tracking-wide text-[#6b6157]">
-              {employees.find((e) => e.employeeId === eom.winner.employeeId)?.departmentName}
-            </p>
-            <p className="mt-4 text-5xl font-black text-[#b45309]">{eom.winner.summary.finalScore}</p>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#6b6157]">Final Score</p>
-            <p className="mt-3 text-sm font-semibold text-[#4a4238]">
-              {eom.winner.summary.productionScore} net production · {eom.winner.summary.manualScore >= 0 ? "+" : ""}
-              {eom.winner.summary.manualScore} manual points
-            </p>
-            <p className="mt-3 text-xs font-bold uppercase tracking-widest text-[#b45309]">
-              {monthLabel(year, month)}
-            </p>
-          </section>
-        )}
-        {eom.status === "tie" && (
-          <section className="my-6 break-inside-avoid rounded-lg border-2 border-[#1a1712] px-6 py-5 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.3em]">Employee of the Month — Tied</p>
-            <p className="mt-2 text-sm">
-              {eom.tiedCandidates.map((c) => eom.employeeNames[c.employeeId]).join(" · ")}
-            </p>
-          </section>
-        )}
-        {eom.status === "none" && (
-          <section className="my-6 break-inside-avoid rounded-lg border-2 border-dashed border-[#c9c1b4] px-6 py-5 text-center text-sm text-[#6b6157]">
-            No activity recorded in {monthLabel(year, month)}.
-          </section>
-        )}
 
         {/* Top employees */}
         <section className="mt-8">

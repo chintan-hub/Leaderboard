@@ -1,6 +1,6 @@
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { getEmployeesByDepartment } from "@/lib/queries";
-import { Card, EmptyState, SectionTitle } from "@/components/ui";
+import { Card, EmptyState, ScoreBreakdown, SectionTitle } from "@/components/ui";
 import NewEmployeeForm from "./new-employee-form";
 import EditEmployeeForm from "./edit-employee-form";
 import DeactivateButton from "./deactivate-button";
@@ -47,27 +47,13 @@ export default async function EmployeesPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-4">
-                            <div className="flex gap-5 text-right text-sm">
-                              <div>
-                                <div className="font-bold tabular-nums text-foreground">
-                                  {emp.summary.productionScore}
-                                </div>
-                                <div className="text-xs text-muted">Production</div>
-                              </div>
-                              <div>
-                                <div className="font-bold tabular-nums text-foreground">
-                                  {emp.summary.manualScore >= 0 ? "+" : ""}
-                                  {emp.summary.manualScore}
-                                </div>
-                                <div className="text-xs text-muted">Manual</div>
-                              </div>
-                              <div>
-                                <div className="font-black tabular-nums text-foreground">
-                                  {emp.summary.finalScore}
-                                </div>
-                                <div className="text-xs text-muted">Final</div>
-                              </div>
-                            </div>
+                            <ScoreBreakdown
+                              completed={emp.summary.casesCompleted}
+                              rework={emp.summary.casesReturned}
+                              manual={emp.summary.manualScore}
+                              final={emp.summary.finalScore}
+                              size="sm"
+                            />
                             {admin && <DeactivateButton employeeId={emp.id} isActive={emp.isActive} />}
                           </div>
                         </div>

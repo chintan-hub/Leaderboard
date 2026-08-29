@@ -1,11 +1,8 @@
 import Link from "next/link";
-import {
-  getDepartmentLeaderboard,
-  getEmployeeLeaderboard,
-  getEmployeeOfMonth,
-} from "@/lib/queries";
-import { Card, EmptyState, RankBadge, SectionTitle } from "@/components/ui";
+import { getDepartmentLeaderboard, getEmployeeLeaderboard } from "@/lib/queries";
+import { SectionTitle } from "@/components/ui";
 import { DepartmentLeaderboardPanel, EmployeeLeaderboardPanel } from "@/components/leaderboard-panels";
+import MonthlyPerformanceChart from "./monthly-performance-chart";
 
 function monthLabel(year: number, month: number): string {
   return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-US", {
@@ -30,8 +27,7 @@ export default async function MonthlyResultsPage({
   const year = Number(params.year) || now.getUTCFullYear();
   const month = Number(params.month) || now.getUTCMonth() + 1;
 
-  const [result, employeeLeaderboard, departmentLeaderboard] = await Promise.all([
-    getEmployeeOfMonth(year, month),
+  const [employeeLeaderboard, departmentLeaderboard] = await Promise.all([
     getEmployeeLeaderboard({ year, month }),
     getDepartmentLeaderboard({ year, month }),
   ]);
@@ -49,7 +45,7 @@ export default async function MonthlyResultsPage({
         >
           Monthly Results
         </SectionTitle>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1 text-sm font-semibold text-muted">
             <Link
               href={`/monthly?year=${prev.year}&month=${prev.month}`}
@@ -70,68 +66,44 @@ export default async function MonthlyResultsPage({
             target="_blank"
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-surface transition hover:bg-brand-strong"
           >
-            🖨 Print Leaderboard
+            🖨 Print
+          </Link>
+          <Link
+            href={`/api/export/monthly?year=${year}&month=${month}`}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
+          >
+            ⬇ Export This Month
+          </Link>
+          <Link
+            href="/api/export/historical"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
+          >
+            ⬇ Export All History
           </Link>
         </div>
       </div>
-
-      {result.status === "none" && (
-        <EmptyState
-          title={`No activity recorded in ${monthLabel(year, month)}`}
-          description="Employee of the Month is only calculated from transactions dated within the selected month."
-        />
-      )}
-
-      {result.status === "tie" && (
-        <Card className="border-info/40 bg-info-tint">
-          <p className="font-bold text-info">Tied — needs admin review</p>
-          <p className="mt-1 text-sm text-foreground/80">
-            No winner was chosen automatically for {monthLabel(year, month)}.
-          </p>
-          <ul className="mt-3 space-y-1 text-sm">
-            {result.tiedCandidates.map((c) => (
-              <li key={c.employeeId} className="flex justify-between">
-                <span>{result.employeeNames[c.employeeId]}</span>
-                <span className="font-bold">{c.summary.finalScore} pts</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {result.status === "winner" && (
-        <div className="relative overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-gold-tint via-white to-white p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-gold">Employee of the Month</p>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <RankBadge rank={1} size="lg" />
-              <div>
-                <div className="text-3xl font-black tracking-tight text-foreground">
-                  {result.employeeNames[result.winner.employeeId]}
-                </div>
-                {result.tieBrokenBy && (
-                  <p className="mt-1 text-xs font-semibold text-muted">
-                    Tie broken by {result.tieBrokenBy.replace(/_/g, " ")}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="score-hero text-4xl text-gold">{result.winner.summary.finalScore}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">
-                Production {result.winner.summary.productionScore} · Manual{" "}
-                {result.winner.summary.manualScore >= 0 ? "+" : ""}
-                {result.winner.summary.manualScore}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <section>
         <SectionTitle subtitle={monthLabel(year, month)}>Employee Leaderboard</SectionTitle>
         <EmployeeLeaderboardPanel rows={employeeLeaderboard} />
       </section>
+
+      {employeeLeaderboard.length > 0 && (
+        <section>
+          <SectionTitle subtitle="Cases completed vs. cases returned, for every employee with activity this month">
+            Completed vs Returned
+          </SectionTitle>
+          <MonthlyPerformanceChart
+            rows={employeeLeaderboard
+              .filter((r) => r.summary.casesCompleted > 0 || r.summary.casesReturned > 0)
+              .map((r) => ({
+                name: r.name,
+                completed: r.summary.casesCompleted,
+                returned: r.summary.casesReturned,
+              }))}
+          />
+        </section>
+      )}
 
       <section>
         <SectionTitle subtitle="Ranked by each department's own configured ranking metric">

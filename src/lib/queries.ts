@@ -6,9 +6,9 @@ import {
   type DepartmentRankingResult,
 } from "@/lib/scoring/department";
 import { computeRankMovement, rankEmployees, type RankMovement } from "@/lib/scoring/leaderboard";
-import { computeEmployeeOfMonth, filterByMonth, type EmployeeOfMonthResult } from "@/lib/scoring/monthly";
+import { filterByMonth } from "@/lib/scoring/monthly";
 import { summarizeAllEmployees, summarizeEmployeeScore } from "@/lib/scoring/score";
-import { filterByDate, summarizeDailyProduction, type DailyProductionTotals } from "@/lib/scoring/daily";
+import { summarizeDailyProduction, type DailyProductionTotals } from "@/lib/scoring/daily";
 import type { EmployeeScoreSummary, ScoreTransactionInput, ScoringRule } from "@/lib/scoring/types";
 
 async function getAllTransactions(): Promise<ScoreTransactionInput[]> {
@@ -247,28 +247,6 @@ export async function getTransactionForCorrection(id: string) {
   return original;
 }
 
-export async function getEmployeeOfMonth(
-  year: number,
-  month: number,
-): Promise<EmployeeOfMonthResult & { employeeNames: Record<string, string> }> {
-  const [employees, transactions] = await Promise.all([
-    prisma.employee.findMany({ where: { isActive: true }, select: { id: true, name: true } }),
-    getAllTransactions(),
-  ]);
-  const scoringRuleByEmployee = await getScoringRuleByEmployee();
-
-  const result = computeEmployeeOfMonth(
-    employees.map((e) => e.id),
-    transactions,
-    year,
-    month,
-    scoringRuleByEmployee,
-  );
-
-  const employeeNames = Object.fromEntries(employees.map((e) => [e.id, e.name]));
-  return { ...result, employeeNames };
-}
-
 export async function getDepartments() {
   return prisma.department.findMany({
     orderBy: { sortOrder: "asc" },
@@ -297,6 +275,62 @@ export async function getEmployeesByDepartment() {
       summary: summarizeEmployeeScore(emp.id, transactions, scoringRuleByEmployee.get(emp.id)),
     })),
   }));
+}
+
+export interface EmployeeMonthHistoryRow extends EmployeeMonthSummary {
+  employeeId: string;
+  employeeName: string;
+  departmentName: string;
+}
+
+/**
+ * Every employee's performance for every month they have activity in —
+ * including inactive employees, since deactivating someone must never erase
+ * their history. Powers the "export all history" spreadsheet. Newest month
+ * first, then employee name.
+ */
+export async function getAllEmployeesMonthlyHistory(): Promise<EmployeeMonthHistoryRow[]> {
+  const [employees, allTransactions] = await Promise.all([
+    prisma.employee.findMany({ include: { department: true }, orderBy: { name: "asc" } }),
+    getAllTransactions(),
+  ]);
+
+  const rows: EmployeeMonthHistoryRow[] = [];
+
+  for (const employee of employees) {
+    const own = allTransactions.filter((t) => t.employeeId === employee.id);
+    const monthKeys = Array.from(
+      new Set(own.map((t) => `${t.eventDate.getUTCFullYear()}-${t.eventDate.getUTCMonth() + 1}`)),
+    ).map((key) => {
+      const [year, month] = key.split("-").map(Number);
+      return { year, month };
+    });
+
+    for (const { year, month } of monthKeys) {
+      const s = summarizeEmployeeScore(
+        employee.id,
+        filterByMonth(own, year, month),
+        employee.department.scoringRule as ScoringRule,
+      );
+      rows.push({
+        year,
+        month,
+        employeeId: employee.id,
+        employeeName: employee.name,
+        departmentName: employee.department.name,
+        casesCompleted: s.casesCompleted,
+        casesReturned: s.casesReturned,
+        net: s.productionScore,
+        manualScore: s.manualScore,
+        finalScore: s.finalScore,
+      });
+    }
+  }
+
+  rows.sort(
+    (a, b) => b.year - a.year || b.month - a.month || a.employeeName.localeCompare(b.employeeName),
+  );
+  return rows;
 }
 
 /** Active employees in one department, for the production-entry grid and manual-points picker. */
@@ -333,19 +367,6 @@ export async function getExistingProductionSummary(departmentId: string, date: D
   return { completed, rework, employeeCount, entryCount: rows.length };
 }
 
-export interface TodaySummary {
-  totalCompleted: number;
-  totalRework: number;
-  netProduction: number;
-  byDepartment: Array<{
-    departmentId: string;
-    departmentName: string;
-    completed: number;
-    rework: number;
-    net: number;
-  }>;
-}
-
 /**
  * A day's transactions for every type (not just PRODUCTION_*) — corrections
  * dated that day are included on purpose, since a correction always carries
@@ -368,35 +389,6 @@ async function getTransactionsForDay(date: Date): Promise<ScoreTransactionInput[
     },
   });
   return rows;
-}
-
-/** Today's production, company-wide and broken down by department. Uses UTC day boundaries, same as monthly bucketing. */
-export async function getTodaySummary(date: Date = new Date()): Promise<TodaySummary> {
-  const [departments, dayTransactions] = await Promise.all([
-    prisma.department.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-    getTransactionsForDay(date),
-  ]);
-
-  const byDepartment = departments.map((dept) => {
-    const totals = summarizeDailyProduction(dayTransactions.filter((t) => t.departmentId === dept.id));
-    return {
-      departmentId: dept.id,
-      departmentName: dept.name,
-      completed: totals.casesCompleted,
-      rework: totals.casesReturned,
-      net: totals.net,
-    };
-  });
-
-  const totalCompleted = byDepartment.reduce((sum, d) => sum + d.completed, 0);
-  const totalRework = byDepartment.reduce((sum, d) => sum + d.rework, 0);
-
-  return {
-    totalCompleted,
-    totalRework,
-    netProduction: totalCompleted - totalRework,
-    byDepartment,
-  };
 }
 
 export interface EmployeeDailyStatus {
@@ -459,6 +451,16 @@ export async function getDepartmentDailyComparison(
   };
 }
 
+export interface EmployeeMonthSummary {
+  year: number;
+  month: number;
+  casesCompleted: number;
+  casesReturned: number;
+  net: number;
+  manualScore: number;
+  finalScore: number;
+}
+
 export interface EmployeeDetail {
   id: string;
   name: string;
@@ -467,12 +469,16 @@ export interface EmployeeDetail {
   departmentName: string;
   joinedAt: Date;
   summary: EmployeeScoreSummary;
-  /** Today's contribution alone — same shape/engine as everywhere else, just filtered to one day. */
-  today: DailyProductionTotals;
-  dailyHistory: Array<{ date: Date; completed: number; rework: number; net: number }>;
+  /**
+   * Every calendar month this employee has any recorded activity in, newest
+   * first — nothing is capped or dropped, so history stays reachable years
+   * later. Each month is recomputed from the ledger the same way the
+   * monthly leaderboard is, so it always agrees with "This Month" elsewhere.
+   */
+  monthlyHistory: EmployeeMonthSummary[];
 }
 
-/** Everything for the employee detail page: all-time summary, today's contribution, and a simple day-by-day production history. */
+/** Everything for the employee detail page: all-time summary plus a month-by-month history, going back as far as the ledger does. */
 export async function getEmployeeDetail(employeeId: string): Promise<EmployeeDetail | null> {
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
@@ -496,18 +502,30 @@ export async function getEmployeeDetail(employeeId: string): Promise<EmployeeDet
     orderBy: { eventDate: "desc" },
   });
 
-  const summary = summarizeEmployeeScore(employeeId, rows, employee.department.scoringRule as ScoringRule);
-  const today = summarizeDailyProduction(filterByDate(rows, new Date()));
+  const scoringRule = employee.department.scoringRule as ScoringRule;
+  const summary = summarizeEmployeeScore(employeeId, rows, scoringRule);
 
-  const uniqueDayKeys = Array.from(new Set(rows.map((r) => r.eventDate.toISOString().slice(0, 10))));
-  const dailyHistory = uniqueDayKeys
-    .map((key) => new Date(`${key}T00:00:00.000Z`))
-    .sort((a, b) => b.getTime() - a.getTime())
-    .slice(0, 30)
-    .map((date) => {
-      const totals = summarizeDailyProduction(filterByDate(rows, date));
-      return { date, completed: totals.casesCompleted, rework: totals.casesReturned, net: totals.net };
-    });
+  const monthKeys = Array.from(
+    new Set(rows.map((r) => `${r.eventDate.getUTCFullYear()}-${r.eventDate.getUTCMonth() + 1}`)),
+  )
+    .map((key) => {
+      const [year, month] = key.split("-").map(Number);
+      return { year, month };
+    })
+    .sort((a, b) => b.year - a.year || b.month - a.month);
+
+  const monthlyHistory = monthKeys.map(({ year, month }) => {
+    const s = summarizeEmployeeScore(employeeId, filterByMonth(rows, year, month), scoringRule);
+    return {
+      year,
+      month,
+      casesCompleted: s.casesCompleted,
+      casesReturned: s.casesReturned,
+      net: s.productionScore,
+      manualScore: s.manualScore,
+      finalScore: s.finalScore,
+    };
+  });
 
   return {
     id: employee.id,
@@ -517,8 +535,7 @@ export async function getEmployeeDetail(employeeId: string): Promise<EmployeeDet
     departmentName: employee.department.name,
     joinedAt: employee.joinedAt,
     summary,
-    today,
-    dailyHistory,
+    monthlyHistory,
   };
 }
 

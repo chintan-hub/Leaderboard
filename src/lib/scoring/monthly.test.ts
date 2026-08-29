@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeEmployeeOfMonth, filterByMonth, isInMonth } from "./monthly";
+import { filterByMonth, isInMonth } from "./monthly";
 import type { ScoreTransactionInput } from "./types";
 
 function tx(overrides: Partial<ScoreTransactionInput>): ScoreTransactionInput {
@@ -49,82 +49,5 @@ describe("isInMonth / filterByMonth — monthly isolation", () => {
     ];
     const june = filterByMonth(transactions, 2026, 6);
     expect(june.reduce((sum, t) => sum + (t.cases ?? 0), 0)).toBe(125);
-  });
-});
-
-describe("computeEmployeeOfMonth — uses the corrected case-based score", () => {
-  it("picks the single highest final score with no tiebreak needed", () => {
-    const transactions = [
-      tx({ employeeId: "a", cases: 30 }),
-      tx({ employeeId: "b", cases: 10 }),
-    ];
-    const result = computeEmployeeOfMonth(["a", "b"], transactions, 2026, 6);
-    expect(result.status).toBe("winner");
-    if (result.status === "winner") {
-      expect(result.winner.employeeId).toBe("a");
-      expect(result.tieBrokenBy).toBeNull();
-    }
-  });
-
-  it("breaks a final-score tie using cases completed (production volume)", () => {
-    const transactions = [
-      // a: 10 completed, 5 returned -> final 5
-      tx({ employeeId: "a", cases: 10 }),
-      tx({
-        employeeId: "a",
-        type: "PRODUCTION_REWORK",
-        cases: 5,
-        responsibility: "DEPARTMENT_FAULT",
-      }),
-      // b: 5 completed, 0 returned -> final 5, same as a, but lower volume
-      tx({ employeeId: "b", cases: 5 }),
-    ];
-    const result = computeEmployeeOfMonth(["a", "b"], transactions, 2026, 6);
-    expect(result.status).toBe("winner");
-    if (result.status === "winner") {
-      expect(result.winner.employeeId).toBe("a");
-      expect(result.tieBrokenBy).toBe("cases_completed");
-    }
-  });
-
-  it("reports an explicit tie instead of silently picking a winner", () => {
-    const transactions = [
-      tx({ employeeId: "a", cases: 10 }),
-      tx({ employeeId: "b", cases: 10 }),
-    ];
-    const result = computeEmployeeOfMonth(["a", "b"], transactions, 2026, 6);
-    expect(result.status).toBe("tie");
-    if (result.status === "tie") {
-      expect(result.tiedCandidates.map((c) => c.employeeId).sort()).toEqual([
-        "a",
-        "b",
-      ]);
-    }
-  });
-
-  it("excludes an eligible employee who had no activity that month", () => {
-    const transactions = [tx({ employeeId: "a", cases: 10 })];
-    const result = computeEmployeeOfMonth(["a", "b"], transactions, 2026, 6);
-    expect(result.status).toBe("winner");
-    if (result.status === "winner") {
-      expect(result.winner.employeeId).toBe("a");
-    }
-  });
-
-  it("returns 'none' when nobody had activity that month", () => {
-    const result = computeEmployeeOfMonth(["a", "b"], [], 2026, 6);
-    expect(result.status).toBe("none");
-  });
-
-  it("only considers eligible employee ids, ignoring inactive/unlisted employees", () => {
-    const transactions = [
-      tx({ employeeId: "a", cases: 5 }),
-      tx({ employeeId: "inactive-emp", cases: 999 }),
-    ];
-    const result = computeEmployeeOfMonth(["a"], transactions, 2026, 6);
-    expect(result.status).toBe("winner");
-    if (result.status === "winner") {
-      expect(result.winner.employeeId).toBe("a");
-    }
   });
 });
