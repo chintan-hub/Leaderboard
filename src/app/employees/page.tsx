@@ -37,7 +37,7 @@ export default async function EmployeesPage() {
                   <ul className="divide-y divide-border">
                     {dept.employees.map((emp) => (
                       <li key={emp.id} className="list-row px-5 py-3.5">
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground">{emp.name}</span>
                             {!emp.isActive && (
@@ -46,7 +46,7 @@ export default async function EmployeesPage() {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-4">
+                          <div className="flex flex-wrap items-center gap-3">
                             <ScoreBreakdown
                               completed={emp.summary.casesCompleted}
                               rework={emp.summary.casesReturned}

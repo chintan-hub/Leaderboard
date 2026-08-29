@@ -181,7 +181,7 @@ export function ScoreBreakdown({
 }) {
   const numberClass = size === "sm" ? "text-base font-bold" : "text-lg font-extrabold";
   return (
-    <div className="flex items-center gap-4 text-right">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right">
       <div>
         <div className={`${numberClass} tabular-nums text-foreground`}>{completed}</div>
         <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Completed</div>

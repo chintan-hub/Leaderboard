@@ -89,7 +89,7 @@ export function EmployeeLeaderboardPanel({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-right text-sm sm:gap-5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm sm:gap-x-5">
                 <div>
                   <div className="font-bold tabular-nums text-foreground">{row.summary.casesCompleted}</div>
                   <div className="text-[10px] uppercase text-muted">Completed</div>
@@ -160,7 +160,7 @@ export function DepartmentLeaderboardPanel({ rows }: { rows: DepartmentRankingRe
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-right text-sm">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm">
               <div>
                 <div className="font-bold tabular-nums text-foreground">{dept.totalCasesCompleted}</div>
                 <div className="text-[10px] uppercase text-muted">Completed</div>

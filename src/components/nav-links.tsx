@@ -37,7 +37,7 @@ export function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-1 flex-wrap items-center gap-1" aria-label="Main">
+    <nav className="flex flex-wrap items-center gap-1" aria-label="Main">
       {VIEW_LINKS.map((link) => {
         const active = isActivePath(pathname, link.href, link.exact);
         const Icon = link.icon;
@@ -64,7 +64,7 @@ export function AdminNavLinks() {
   const toolsActive = pathname.startsWith("/admin") && !productionActive;
 
   return (
-    <div className="flex items-center gap-1 border-l border-border pl-3">
+    <div className="flex items-center gap-1 sm:border-l sm:border-border sm:pl-3">
       <Link
         href="/admin/production"
         aria-current={productionActive ? "page" : undefined}

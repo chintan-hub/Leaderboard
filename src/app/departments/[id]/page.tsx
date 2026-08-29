@@ -83,7 +83,10 @@ export default async function DepartmentDrilldownPage({
           <Card className="p-0">
             <ul className="divide-y divide-border">
               {employees.map((emp) => (
-                <li key={emp.employeeId} className="list-row flex items-center justify-between gap-4 px-5 py-3.5">
+                <li
+                  key={emp.employeeId}
+                  className="list-row flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
+                >
                   <div className="flex items-center gap-3">
                     <RankBadge rank={emp.rank} size="sm" />
                     <Link
@@ -93,7 +96,7 @@ export default async function DepartmentDrilldownPage({
                       {emp.name}
                     </Link>
                   </div>
-                  <div className="flex items-center gap-4 text-right text-sm">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm">
                     <div>
                       <div className="font-bold tabular-nums text-foreground">{emp.summary.casesCompleted}</div>
                       <div className="text-[10px] uppercase text-muted">Completed</div>

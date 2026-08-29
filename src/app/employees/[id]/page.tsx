@@ -112,7 +112,7 @@ export default async function EmployeeDetailPage({
                         timeZone: "UTC",
                       })}
                     </span>
-                    <span className="flex items-center gap-4 text-right tabular-nums">
+                    <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right tabular-nums">
                       <span>
                         <span className="font-bold text-foreground">{m.casesCompleted}</span>{" "}
                         <span className="text-xs text-muted">completed</span>
