@@ -9,6 +9,7 @@ import {
 } from "@/lib/queries";
 import { getReworkReasonOptions } from "@/lib/scoring/rework-reasons";
 import { SectionTitle } from "@/components/ui";
+import { IconPrinter } from "@/components/icons";
 import DepartmentDatePicker from "./department-date-picker";
 import BulkProductionForm from "./bulk-production-form";
 import ProductionEntryForm from "./production-entry-form";
@@ -56,7 +57,8 @@ export default async function ProductionEntryPage({
             target="_blank"
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-muted transition hover:border-brand hover:text-brand"
           >
-            🖨 Print {date === todayIsoUTC() ? "Today's" : "This Day's"} Production
+            <IconPrinter className="h-4 w-4" />
+            Print {date === todayIsoUTC() ? "Today's" : "This Day's"} Production
           </Link>
         }
       >

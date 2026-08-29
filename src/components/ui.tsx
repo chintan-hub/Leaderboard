@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { IconCheck, IconWarning } from "@/components/icons";
 
 export function Card({
   children,
@@ -87,8 +88,8 @@ export function FormError({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <p className="flex items-start gap-2 rounded-lg border border-negative/20 bg-negative-tint px-3 py-2 text-sm font-medium text-negative">
-      <span aria-hidden className="mt-0.5 text-xs">
-        ⚠
+      <span aria-hidden className="mt-0.5 shrink-0">
+        <IconWarning className="h-4 w-4" />
       </span>
       <span>{message}</span>
     </p>
@@ -98,8 +99,8 @@ export function FormError({ message }: { message?: string }) {
 export function FormSuccess({ message }: { message: string }) {
   return (
     <p className="flex items-start gap-2 rounded-lg border border-positive/20 bg-positive-tint px-3 py-2 text-sm font-medium text-positive">
-      <span aria-hidden className="mt-0.5 text-xs">
-        ✓
+      <span aria-hidden className="mt-0.5 shrink-0">
+        <IconCheck className="h-4 w-4" />
       </span>
       <span>{message}</span>
     </p>

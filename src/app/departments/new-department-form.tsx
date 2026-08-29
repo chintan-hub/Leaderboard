@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createDepartment } from "@/lib/actions/departments";
 import { Card, Field, FormError, PrimaryButton, TextInput } from "@/components/ui";
+import { IconPlus } from "@/components/icons";
 
 export default function NewDepartmentForm() {
   const [state, formAction, pending] = useActionState(createDepartment, {});
@@ -15,6 +16,7 @@ export default function NewDepartmentForm() {
         </Field>
         <FormError message={state.error} />
         <PrimaryButton type="submit" disabled={pending}>
+          <IconPlus className="h-4 w-4" />
           {pending ? "Adding…" : "Add Department"}
         </PrimaryButton>
       </form>

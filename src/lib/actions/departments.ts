@@ -81,10 +81,14 @@ export async function updateDepartment(
   if (!department) return { error: "Department not found." };
 
   if (name !== department.name) {
-    const nameTaken = await prisma.department.findFirst({
-      where: { name, NOT: { id } },
+    const targetSlug = slugify(name);
+    const existingDepartments = await prisma.department.findMany({
+      where: { NOT: { id } },
+      select: { slug: true },
     });
-    if (nameTaken) return { error: `A department named "${name}" already exists.` };
+    if (existingDepartments.some((d) => d.slug === targetSlug)) {
+      return { error: `A department named "${name}" already exists.` };
+    }
   }
 
   await prisma.department.update({
@@ -101,5 +105,74 @@ export async function updateDepartment(
   revalidatePath("/departments");
   revalidatePath("/");
   revalidatePath("/admin/production");
+  return {};
+}
+
+/**
+ * Toggles a department between active and archived. Archiving is the safe
+ * alternative to deletion for a department with history — it stops showing
+ * up for new production entry while every past record stays exactly as it
+ * was (same pattern as `setEmployeeActive`).
+ */
+export async function setDepartmentActive(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const isActive = formData.get("isActive") === "true";
+
+  const department = await prisma.department.findUnique({ where: { id } });
+  if (!department) return { error: "Department not found." };
+
+  await prisma.department.update({ where: { id }, data: { isActive } });
+
+  revalidatePath("/departments");
+  revalidatePath("/");
+  revalidatePath("/admin/production");
+  revalidatePath("/monthly");
+  revalidatePath("/display");
+  return {};
+}
+
+/**
+ * Deletes a department only when nothing references it. Employees and
+ * ScoreTransactions carry a required, RESTRICT-on-delete foreign key to
+ * Department, so the database itself would refuse a delete with dependents —
+ * this check exists to give the admin a clear explanation instead of a raw
+ * constraint error, with the database as the backstop.
+ */
+export async function deleteDepartment(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+
+  const department = await prisma.department.findUnique({
+    where: { id },
+    include: { _count: { select: { employees: true, transactions: true } } },
+  });
+  if (!department) return { error: "Department not found." };
+
+  if (department._count.employees > 0 || department._count.transactions > 0) {
+    return {
+      error: `"${department.name}" can't be deleted — it has ${department._count.employees} employee${
+        department._count.employees === 1 ? "" : "s"
+      } and ${department._count.transactions} historical record${
+        department._count.transactions === 1 ? "" : "s"
+      } attached. Archive it instead to hide it while keeping that history intact.`,
+    };
+  }
+
+  await prisma.department.delete({ where: { id } });
+
+  revalidatePath("/departments");
+  revalidatePath("/");
+  revalidatePath("/admin/production");
+  revalidatePath("/monthly");
+  revalidatePath("/display");
   return {};
 }

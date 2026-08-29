@@ -2,8 +2,11 @@ import Link from "next/link";
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { getDepartments } from "@/lib/queries";
 import { Badge, Card, SectionTitle } from "@/components/ui";
+import { IconEdit } from "@/components/icons";
 import NewDepartmentForm from "./new-department-form";
 import EditDepartmentForm from "./edit-department-form";
+import ArchiveDepartmentButton from "./archive-department-button";
+import DeleteDepartmentButton from "./delete-department-button";
 
 const SCORING_RULE_LABEL: Record<string, string> = {
   NET_PRODUCTION: "Net Production",
@@ -64,21 +67,26 @@ export default async function DepartmentsPage() {
             </dl>
 
             {admin && (
-              <details className="group mt-3">
-                <summary className="focus-ring inline-block cursor-pointer rounded text-xs font-semibold text-muted transition hover:text-brand">
-                  Edit settings
-                </summary>
-                <EditDepartmentForm
-                  department={{
-                    id: dept.id,
-                    name: dept.name,
-                    scoringRule: dept.scoringRule,
-                    rankingMetric: dept.rankingMetric,
-                    productionTrackingEnabled: dept.productionTrackingEnabled,
-                    reworkTrackingEnabled: dept.reworkTrackingEnabled,
-                  }}
-                />
-              </details>
+              <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-border pt-3">
+                <details className="group">
+                  <summary className="focus-ring inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-muted transition hover:bg-surface-hover hover:text-brand">
+                    <IconEdit className="h-3.5 w-3.5" />
+                    Edit
+                  </summary>
+                  <EditDepartmentForm
+                    department={{
+                      id: dept.id,
+                      name: dept.name,
+                      scoringRule: dept.scoringRule,
+                      rankingMetric: dept.rankingMetric,
+                      productionTrackingEnabled: dept.productionTrackingEnabled,
+                      reworkTrackingEnabled: dept.reworkTrackingEnabled,
+                    }}
+                  />
+                </details>
+                <ArchiveDepartmentButton departmentId={dept.id} isActive={dept.isActive} />
+                <DeleteDepartmentButton departmentId={dept.id} departmentName={dept.name} />
+              </div>
             )}
           </Card>
         ))}

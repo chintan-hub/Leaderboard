@@ -401,7 +401,7 @@ export interface EmployeeDailyStatus {
   net: number;
 }
 
-/** Per-employee daily status for one department — powers the ✓/○ completeness indicator and the "already recorded today" detail on the production board. */
+/** Per-employee daily status for one department — powers the recorded/not-recorded indicator and the "already recorded today" detail on the production board. */
 export async function getDepartmentDailyStatus(
   departmentId: string,
   date: Date,

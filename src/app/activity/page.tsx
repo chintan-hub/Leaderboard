@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { getRecentActivity } from "@/lib/queries";
 import { prisma } from "@/lib/db";
 import { Card, EmptyState, PrimaryButton, SectionTitle } from "@/components/ui";
+import { IconDownload } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   PRODUCTION_COMPLETED: "Completed",
@@ -68,7 +69,8 @@ export default async function ActivityHistoryPage({
             href={exportHref}
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
           >
-            ⬇ Export Excel
+            <IconDownload className="h-4 w-4" />
+            Export Excel
           </Link>
         }
       >

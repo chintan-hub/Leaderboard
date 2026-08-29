@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getDepartmentLeaderboard, getEmployeeLeaderboard } from "@/lib/queries";
 import { SectionTitle } from "@/components/ui";
+import { IconDownload, IconPrinter } from "@/components/icons";
 import { DepartmentLeaderboardPanel, EmployeeLeaderboardPanel } from "@/components/leaderboard-panels";
 import MonthlyPerformanceChart from "./monthly-performance-chart";
 
@@ -66,19 +67,22 @@ export default async function MonthlyResultsPage({
             target="_blank"
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-surface transition hover:bg-brand-strong"
           >
-            🖨 Print
+            <IconPrinter className="h-4 w-4" />
+            Print
           </Link>
           <Link
             href={`/api/export/monthly?year=${year}&month=${month}`}
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
           >
-            ⬇ Export This Month
+            <IconDownload className="h-4 w-4" />
+            Export This Month
           </Link>
           <Link
             href="/api/export/historical"
             className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-strong hover:bg-surface-hover"
           >
-            ⬇ Export All History
+            <IconDownload className="h-4 w-4" />
+            Export All History
           </Link>
         </div>
       </div>

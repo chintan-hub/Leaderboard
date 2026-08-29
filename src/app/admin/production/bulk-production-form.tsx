@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { saveBulkProduction, type BulkProductionResultState } from "@/lib/actions/production";
 import { Card, FormError, MovementIndicator } from "@/components/ui";
+import { IconCheck, IconCircle } from "@/components/icons";
 import type { DailyProductionTotals } from "@/lib/scoring/daily";
 
 interface ReasonOption {
@@ -194,11 +195,14 @@ export default function BulkProductionForm({
                       <td className="px-5 py-2.5">
                         <div className="flex items-center gap-2">
                           <span
-                            aria-hidden
-                            className={`text-sm ${status?.hasEntry ? "text-positive" : "text-muted/50"}`}
+                            className={status?.hasEntry ? "text-positive" : "text-muted/50"}
                             title={status?.hasEntry ? "Recorded today" : "Not recorded yet"}
                           >
-                            {status?.hasEntry ? "✓" : "○"}
+                            {status?.hasEntry ? (
+                              <IconCheck className="h-3.5 w-3.5" />
+                            ) : (
+                              <IconCircle className="h-3.5 w-3.5" />
+                            )}
                           </span>
                           <span className="font-semibold text-foreground">{emp.name}</span>
                         </div>
