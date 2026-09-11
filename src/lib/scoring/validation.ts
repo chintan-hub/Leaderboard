@@ -1,12 +1,11 @@
+import { isValidCategory } from "./point-categories";
 import type { CorrectionTarget, ReworkResponsibility, TransactionType } from "./types";
 
-export interface NewTransactionInput {
-  type: TransactionType;
+export interface NewPointTransactionInput {
+  type: "MANUAL_BONUS" | "MANUAL_DEDUCTION";
   employeeId: string;
   departmentId: string;
-  cases?: number | null;
-  points?: number | null;
-  responsibility?: ReworkResponsibility | null;
+  category: string;
   reason: string;
   eventDate: Date;
 }
@@ -16,53 +15,25 @@ export type ValidationResult =
   | { valid: false; errors: string[] };
 
 /**
- * Guards every score-changing write. This is the one place that enforces
- * "no unexplained score changes" — a non-empty reason is mandatory for
- * every transaction type, production or manual alike.
+ * Guards every new point-changing write. This is the one place that
+ * enforces "no unexplained point changes" — a valid category and a
+ * non-empty reason are both mandatory for every point, positive or negative.
  */
-export function validateNewTransaction(
-  input: NewTransactionInput,
+export function validateNewPointTransaction(
+  input: NewPointTransactionInput,
 ): ValidationResult {
   const errors: string[] = [];
 
-  if (!input.reason || input.reason.trim().length === 0) {
-    errors.push("A reason is required for every score-changing entry.");
-  }
-
-  if (!input.employeeId) errors.push("employeeId is required.");
-  if (!input.departmentId) errors.push("departmentId is required.");
+  if (!input.employeeId) errors.push("Select an employee.");
+  if (!input.departmentId) errors.push("Could not resolve that employee's department.");
   if (!input.eventDate || Number.isNaN(input.eventDate.getTime())) {
-    errors.push("A valid eventDate is required.");
+    errors.push("A valid date is required.");
   }
-
-  switch (input.type) {
-    case "PRODUCTION_COMPLETED": {
-      if (!Number.isInteger(input.cases) || (input.cases as number) <= 0) {
-        errors.push("cases must be a positive integer for completed production.");
-      }
-      break;
-    }
-    case "PRODUCTION_REWORK": {
-      if (!Number.isInteger(input.cases) || (input.cases as number) <= 0) {
-        errors.push("cases must be a positive integer for a returned case.");
-      }
-      if (
-        input.responsibility !== "DEPARTMENT_FAULT" &&
-        input.responsibility !== "EXTERNAL_NOT_FAULT"
-      ) {
-        errors.push(
-          "responsibility must be DEPARTMENT_FAULT or EXTERNAL_NOT_FAULT for a returned case.",
-        );
-      }
-      break;
-    }
-    case "MANUAL_BONUS":
-    case "MANUAL_DEDUCTION": {
-      if (input.points !== 1) {
-        errors.push("Manual points must be exactly 1 (recorded as bonus or deduction).");
-      }
-      break;
-    }
+  if (!input.category || !isValidCategory(input.category)) {
+    errors.push("Select a category.");
+  }
+  if (!input.reason || input.reason.trim().length === 0) {
+    errors.push("A reason is required for every point.");
   }
 
   return errors.length === 0 ? { valid: true } : { valid: false, errors };
@@ -71,8 +42,10 @@ export function validateNewTransaction(
 /**
  * Derives which counter a correction adjusts from the transaction being
  * corrected. This is never a choice the admin makes in the UI — it's
- * mechanical, so a "completed cases" correction can't accidentally land on
- * "manual bonus" or vice versa.
+ * mechanical, so a correction can't accidentally land on the wrong bucket.
+ * Still generic across legacy production types too, so an old
+ * PRODUCTION_COMPLETED/PRODUCTION_REWORK row can still be corrected for
+ * record accuracy even though production no longer affects anyone's points.
  */
 export function deriveCorrectionTarget(original: {
   type: TransactionType;
@@ -96,7 +69,7 @@ export function deriveCorrectionTarget(original: {
 
 export interface CorrectionInput {
   originalType: TransactionType;
-  /** The original row's own contribution to its bucket (case count for production types, 1 for manual types). */
+  /** The original row's own contribution to its bucket (case count for legacy production types, 1 for point types). */
   originalAmount: number;
   correctedValue: number;
   reason: string;

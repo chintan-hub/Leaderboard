@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  IconActivity,
-  IconCalendar,
-  IconClipboard,
-  IconGrid,
-  IconHome,
-  IconTool,
-  IconUsers,
-} from "./nav-icons";
+import { IconActivity, IconCalendar, IconGrid, IconHome, IconTool, IconUsers } from "./nav-icons";
+import { IconStar } from "./icons";
 
 const VIEW_LINKS = [
   { href: "/", label: "Dashboard", icon: IconHome, exact: true },
@@ -60,18 +53,18 @@ export function NavLinks() {
 /** Admin-only actions, visually grouped apart from the view links since they change data rather than just navigate. */
 export function AdminNavLinks() {
   const pathname = usePathname();
-  const productionActive = isActivePath(pathname, "/admin/production");
-  const toolsActive = pathname.startsWith("/admin") && !productionActive;
+  const pointsActive = isActivePath(pathname, "/admin/points");
+  const toolsActive = pathname.startsWith("/admin") && !pointsActive;
 
   return (
     <div className="flex items-center gap-1 sm:border-l sm:border-border sm:pl-3">
       <Link
-        href="/admin/production"
-        aria-current={productionActive ? "page" : undefined}
-        className={linkClass(productionActive)}
+        href="/admin/points"
+        aria-current={pointsActive ? "page" : undefined}
+        className={linkClass(pointsActive)}
       >
-        <IconClipboard className="h-4 w-4 shrink-0" />
-        <span>Production</span>
+        <IconStar className="h-4 w-4 shrink-0" />
+        <span>Award Points</span>
       </Link>
       <Link
         href="/admin"

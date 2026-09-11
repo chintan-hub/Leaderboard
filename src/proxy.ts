@@ -2,11 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth/session";
 
 // Every screen is view-only by default and needs no login. Only the /admin
-// area (production entry, manual points, department/employee management,
-// settings) requires the single admin session. This is a UX redirect only —
-// the actual enforcement is requireAdmin() inside each server
-// action/route handler, so this proxy being bypassed would not open up any
-// writes.
+// area (awarding points, department/employee management, settings)
+// requires the single admin session. This is a UX redirect only — the
+// actual enforcement is requireAdmin() inside each server action/route
+// handler, so this proxy being bypassed would not open up any writes.
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/setup"];
 
 export async function proxy(request: NextRequest) {

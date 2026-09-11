@@ -4,12 +4,13 @@ import { getRecentActivity } from "@/lib/queries";
 import { prisma } from "@/lib/db";
 import { Card, EmptyState, PrimaryButton, SectionTitle } from "@/components/ui";
 import { IconDownload } from "@/components/icons";
+import { getCategoryLabel } from "@/lib/scoring/point-categories";
 
 const TYPE_LABEL: Record<string, string> = {
-  PRODUCTION_COMPLETED: "Completed",
-  PRODUCTION_REWORK: "Returned",
-  MANUAL_BONUS: "Manual +1",
-  MANUAL_DEDUCTION: "Manual -1",
+  PRODUCTION_COMPLETED: "Completed (legacy)",
+  PRODUCTION_REWORK: "Returned (legacy)",
+  MANUAL_BONUS: "Recognition +1",
+  MANUAL_DEDUCTION: "Deduction −1",
   CORRECTION: "Correction",
 };
 
@@ -63,7 +64,7 @@ export default async function ActivityHistoryPage({
   return (
     <div className="space-y-6">
       <SectionTitle
-        subtitle="Every score-changing event, immutable and fully traceable. Corrections appear as new entries, never silent edits."
+        subtitle="Every point event, immutable and fully traceable. Corrections appear as new entries, never silent edits."
         action={
           <Link
             href={exportHref}
@@ -148,7 +149,7 @@ export default async function ActivityHistoryPage({
           description={
             filtered
               ? "Try a different department, employee, or date."
-              : "Production entries, rework, and manual points recorded by an admin will show up here."
+              : "Points recorded by an admin will show up here."
           }
         />
       ) : (
@@ -160,7 +161,8 @@ export default async function ActivityHistoryPage({
                 <th>Type</th>
                 <th>Employee</th>
                 <th>Department</th>
-                <th className="text-right">Amount</th>
+                <th>Category</th>
+                <th className="text-right">Points</th>
                 <th>Reason</th>
                 <th>Recorded by</th>
                 {admin && <th />}
@@ -208,6 +210,7 @@ export default async function ActivityHistoryPage({
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-muted">{row.departmentName}</td>
+                    <td className="px-4 py-3 text-muted">{getCategoryLabel(row.category) ?? "—"}</td>
                     <td
                       className={`px-4 py-3 text-right font-bold tabular-nums ${
                         isNegative ? "text-negative" : "text-positive"

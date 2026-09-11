@@ -3,11 +3,6 @@ import { notFound } from "next/navigation";
 import { getDepartmentDrilldown } from "@/lib/queries";
 import { Card, EmptyState, RankBadge, SectionTitle } from "@/components/ui";
 
-const RANKING_METRIC_LABEL: Record<string, string> = {
-  AVG_NET_PER_EMPLOYEE: "Average net production per employee",
-  TOTAL_NET_PRODUCTION: "Total net production",
-};
-
 function monthLabel(year: number, month: number): string {
   return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-US", {
     month: "long",
@@ -29,7 +24,7 @@ export default async function DepartmentDrilldownPage({
   const drilldown = await getDepartmentDrilldown(id, { year, month });
   if (!drilldown) notFound();
 
-  const { department, ranking, employees } = drilldown;
+  const { department, points, employees } = drilldown;
 
   return (
     <div className="space-y-6">
@@ -48,27 +43,26 @@ export default async function DepartmentDrilldownPage({
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex gap-8">
             <div>
-              <div className="score-lg text-2xl text-foreground">{ranking.totalCasesCompleted}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Completed</div>
-            </div>
-            <div>
-              <div
-                className={`score-lg text-2xl ${ranking.totalCasesReturned > 0 ? "text-negative" : "text-foreground"}`}
-              >
-                {ranking.totalCasesReturned}
+              <div className="score-lg text-2xl text-positive">
+                {points.positivePoints > 0 ? "+" : ""}
+                {points.positivePoints}
               </div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Returned</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-muted">Positive</div>
             </div>
             <div>
-              <div className="score-lg text-2xl text-positive">{ranking.totalProductionScore}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Net Cases</div>
+              <div className={`score-lg text-2xl ${points.negativePoints > 0 ? "text-negative" : "text-foreground"}`}>
+                {points.negativePoints > 0 ? "−" : ""}
+                {points.negativePoints}
+              </div>
+              <div className="text-xs font-bold uppercase tracking-wide text-muted">Negative</div>
             </div>
           </div>
           <div className="text-right">
-            <div className="score-hero text-3xl text-brand">{ranking.metricValue.toFixed(1)}</div>
-            <div className="text-xs font-bold uppercase tracking-wide text-muted">
-              {RANKING_METRIC_LABEL[ranking.metricKey] ?? ranking.metricKey}
+            <div className="score-hero text-3xl text-brand">
+              {points.netPoints >= 0 ? "+" : ""}
+              {points.netPoints}
             </div>
+            <div className="text-xs font-bold uppercase tracking-wide text-muted">Net Points</div>
           </div>
         </div>
       </Card>
@@ -98,20 +92,27 @@ export default async function DepartmentDrilldownPage({
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm">
                     <div>
-                      <div className="font-bold tabular-nums text-foreground">{emp.summary.casesCompleted}</div>
-                      <div className="text-[10px] uppercase text-muted">Completed</div>
+                      <div className="font-bold tabular-nums text-foreground">
+                        {emp.summary.positivePoints > 0 ? "+" : ""}
+                        {emp.summary.positivePoints}
+                      </div>
+                      <div className="text-[10px] uppercase text-muted">Positive</div>
                     </div>
                     <div>
                       <div
-                        className={`font-bold tabular-nums ${emp.summary.casesReturned > 0 ? "text-negative" : "text-foreground"}`}
+                        className={`font-bold tabular-nums ${emp.summary.negativePoints > 0 ? "text-negative" : "text-foreground"}`}
                       >
-                        {emp.summary.casesReturned}
+                        {emp.summary.negativePoints > 0 ? "−" : ""}
+                        {emp.summary.negativePoints}
                       </div>
-                      <div className="text-[10px] uppercase text-muted">Returned</div>
+                      <div className="text-[10px] uppercase text-muted">Negative</div>
                     </div>
                     <div className="w-14">
-                      <div className="score-md text-xl text-brand">{emp.summary.finalScore}</div>
-                      <div className="text-[10px] uppercase text-muted">Final</div>
+                      <div className="score-md text-xl text-brand">
+                        {emp.summary.netPoints >= 0 ? "+" : ""}
+                        {emp.summary.netPoints}
+                      </div>
+                      <div className="text-[10px] uppercase text-muted">Net</div>
                     </div>
                   </div>
                 </li>

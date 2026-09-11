@@ -15,10 +15,8 @@ function slugify(name: string): string {
 
 /**
  * Creates a new department. Departments are configurable rather than
- * hard-coded — this is how a lab adds a department beyond the initial six.
- * New departments default to the same net-production scoring rule; a
- * different rule can be assigned later by editing `scoringRule` once more
- * formulas exist in the registry (src/lib/scoring/*.ts).
+ * hard-coded — this is how the lab adds a department beyond the initial
+ * roster.
  */
 export async function createDepartment(
   _prev: ActionResult,
@@ -46,13 +44,12 @@ export async function createDepartment(
   return {};
 }
 
-const VALID_SCORING_RULES = new Set(["NET_PRODUCTION", "MANUAL_POINTS_ONLY"]);
-const VALID_RANKING_METRICS = new Set(["AVG_NET_PER_EMPLOYEE", "TOTAL_NET_PRODUCTION"]);
-
 /**
- * Edits a department's settings. Name changes keep the existing slug (it's
- * only used as a stable identifier, not shown to users), so historical
- * links/filters by department id are unaffected.
+ * Renames a department. Name changes keep the existing slug (it's only used
+ * as a stable identifier, not shown to users), so historical links/filters
+ * by department id are unaffected. Every employee and point event stays
+ * attached via the department's id, never its name, so a rename never
+ * alters or loses history.
  */
 export async function updateDepartment(
   _prev: ActionResult,
@@ -62,19 +59,9 @@ export async function updateDepartment(
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const scoringRule = String(formData.get("scoringRule") ?? "");
-  const rankingMetric = String(formData.get("rankingMetric") ?? "");
-  const productionTrackingEnabled = formData.get("productionTrackingEnabled") === "true";
-  const reworkTrackingEnabled = formData.get("reworkTrackingEnabled") === "true";
 
   if (name.length < 2) {
     return { error: "Department name must be at least 2 characters." };
-  }
-  if (!VALID_SCORING_RULES.has(scoringRule)) {
-    return { error: "Select a valid scoring method." };
-  }
-  if (!VALID_RANKING_METRICS.has(rankingMetric)) {
-    return { error: "Select a valid ranking metric." };
   }
 
   const department = await prisma.department.findUnique({ where: { id } });
@@ -91,28 +78,20 @@ export async function updateDepartment(
     }
   }
 
-  await prisma.department.update({
-    where: { id },
-    data: {
-      name,
-      scoringRule,
-      rankingMetric,
-      productionTrackingEnabled,
-      reworkTrackingEnabled,
-    },
-  });
+  await prisma.department.update({ where: { id }, data: { name } });
 
   revalidatePath("/departments");
   revalidatePath("/");
-  revalidatePath("/admin/production");
+  revalidatePath("/monthly");
+  revalidatePath("/display");
   return {};
 }
 
 /**
  * Toggles a department between active and archived. Archiving is the safe
  * alternative to deletion for a department with history — it stops showing
- * up for new production entry while every past record stays exactly as it
- * was (same pattern as `setEmployeeActive`).
+ * up for active picklists while every past record stays exactly as it was
+ * (same pattern as `setEmployeeActive`).
  */
 export async function setDepartmentActive(
   _prev: ActionResult,
@@ -130,7 +109,6 @@ export async function setDepartmentActive(
 
   revalidatePath("/departments");
   revalidatePath("/");
-  revalidatePath("/admin/production");
   revalidatePath("/monthly");
   revalidatePath("/display");
   return {};
@@ -171,7 +149,6 @@ export async function deleteDepartment(
 
   revalidatePath("/departments");
   revalidatePath("/");
-  revalidatePath("/admin/production");
   revalidatePath("/monthly");
   revalidatePath("/display");
   return {};

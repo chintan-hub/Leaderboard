@@ -1,36 +1,31 @@
-import { summarizeEmployeeScore } from "./score";
-import type { EmployeeScoreSummary, ScoreTransactionInput, ScoringRule } from "./types";
+import { summarizeEmployeePoints } from "./score";
+import type { EmployeePointsSummary, ScoreTransactionInput } from "./types";
 
 export interface RankedEmployee {
   employeeId: string;
   rank: number;
-  summary: EmployeeScoreSummary;
+  summary: EmployeePointsSummary;
 }
 
 /**
- * Ranks every given employee by final score, highest first. Every employee
+ * Ranks every given employee by net points, highest first. Every employee
  * id passed in gets a rank — including ones with zero activity, ranked
- * (tied) at the bottom — so the leaderboard always shows the full roster
- * rather than silently dropping people who haven't logged anything yet.
- * Ties are broken by employeeId so relative order is stable across calls,
- * which matters for rank-movement comparisons (see computeRankMovement).
+ * (tied) at the bottom — so the standings always show the full roster
+ * rather than silently dropping people who haven't had a point recorded
+ * yet. Ties are broken by employeeId so relative order is stable across
+ * calls, which matters for rank-movement comparisons (see computeRankMovement).
  */
 export function rankEmployees(
   employeeIds: string[],
   transactions: ScoreTransactionInput[],
-  scoringRuleByEmployee?: Map<string, ScoringRule>,
 ): RankedEmployee[] {
   const sorted = [...employeeIds].sort((a, b) => a.localeCompare(b));
   const summaries = sorted.map((employeeId) => ({
     employeeId,
-    summary: summarizeEmployeeScore(
-      employeeId,
-      transactions,
-      scoringRuleByEmployee?.get(employeeId) ?? "NET_PRODUCTION",
-    ),
+    summary: summarizeEmployeePoints(employeeId, transactions),
   }));
 
-  summaries.sort((a, b) => b.summary.finalScore - a.summary.finalScore);
+  summaries.sort((a, b) => b.summary.netPoints - a.summary.netPoints);
 
   return summaries.map((entry, index) => ({ ...entry, rank: index + 1 }));
 }

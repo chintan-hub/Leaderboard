@@ -1,12 +1,6 @@
 import Link from "next/link";
-import type { DepartmentRankingResult } from "@/lib/scoring/department";
 import type { EmployeeLeaderboardRow } from "@/lib/queries";
-import { Badge, Card, EmptyState, MovementIndicator, RankBadge } from "@/components/ui";
-
-const RANKING_METRIC_LABEL: Record<string, string> = {
-  AVG_NET_PER_EMPLOYEE: "Average net production per employee",
-  TOTAL_NET_PRODUCTION: "Total net production",
-};
+import { Card, EmptyState, MovementIndicator, RankBadge } from "@/components/ui";
 
 export function EmployeeLeaderboardPanel({
   rows,
@@ -21,7 +15,7 @@ export function EmployeeLeaderboardPanel({
     return (
       <EmptyState
         title="No employees yet"
-        description="Add employees under a department to start tracking production."
+        description="Add employees under a department to start tracking points."
         action={emptyAction}
       />
     );
@@ -59,9 +53,13 @@ export function EmployeeLeaderboardPanel({
               </div>
               <div className="mt-3 flex items-end justify-between">
                 <span className="text-xs text-muted">
-                  {row.summary.casesCompleted} completed · {row.summary.casesReturned} returned
+                  {row.summary.recognitionCount} recognition{row.summary.recognitionCount === 1 ? "" : "s"} ·{" "}
+                  {row.summary.deductionCount} deduction{row.summary.deductionCount === 1 ? "" : "s"}
                 </span>
-                <span className="score-lg text-2xl text-foreground">{row.summary.finalScore}</span>
+                <span className="score-lg text-2xl text-foreground">
+                  {row.summary.netPoints >= 0 ? "+" : ""}
+                  {row.summary.netPoints}
+                </span>
               </div>
             </Card>
           ))}
@@ -91,37 +89,31 @@ export function EmployeeLeaderboardPanel({
 
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm sm:gap-x-5">
                 <div>
-                  <div className="font-bold tabular-nums text-foreground">{row.summary.casesCompleted}</div>
-                  <div className="text-[10px] uppercase text-muted">Completed</div>
+                  <div className="font-bold tabular-nums text-foreground">
+                    {row.summary.positivePoints > 0 ? "+" : ""}
+                    {row.summary.positivePoints}
+                  </div>
+                  <div className="text-[10px] uppercase text-muted">Positive</div>
                 </div>
                 <div>
                   <div
                     className={`font-bold tabular-nums ${
-                      row.summary.casesReturned > 0 ? "text-negative" : "text-foreground"
+                      row.summary.negativePoints > 0 ? "text-negative" : "text-foreground"
                     }`}
                   >
-                    {row.summary.casesReturned}
+                    {row.summary.negativePoints > 0 ? "−" : ""}
+                    {row.summary.negativePoints}
                   </div>
-                  <div className="text-[10px] uppercase text-muted">Returned</div>
-                </div>
-                <div>
-                  <div className="font-bold tabular-nums text-foreground">{row.summary.productionScore}</div>
-                  <div className="text-[10px] uppercase text-muted">Net</div>
-                </div>
-                <div>
-                  <div className="font-bold tabular-nums text-foreground">
-                    {row.summary.manualScore >= 0 ? "+" : ""}
-                    {row.summary.manualScore}
-                  </div>
-                  <div className="text-[10px] uppercase text-muted">Manual</div>
+                  <div className="text-[10px] uppercase text-muted">Negative</div>
                 </div>
                 <div className="w-14">
                   <div
-                    className={`score-md text-xl ${row.summary.finalScore < 0 ? "text-negative" : "text-brand"}`}
+                    className={`score-md text-xl ${row.summary.netPoints < 0 ? "text-negative" : "text-brand"}`}
                   >
-                    {row.summary.finalScore}
+                    {row.summary.netPoints >= 0 ? "+" : ""}
+                    {row.summary.netPoints}
                   </div>
-                  <div className="text-[10px] uppercase text-muted">Final</div>
+                  <div className="text-[10px] uppercase text-muted">Net</div>
                 </div>
               </div>
             </li>
@@ -129,60 +121,5 @@ export function EmployeeLeaderboardPanel({
         </ul>
       </Card>
     </div>
-  );
-}
-
-export function DepartmentLeaderboardPanel({ rows }: { rows: DepartmentRankingResult[] }) {
-  if (rows.length === 0) {
-    return <EmptyState title="No departments yet" description="Departments are seeded on setup." />;
-  }
-
-  return (
-    <Card className="p-0">
-      <ul className="divide-y divide-border">
-        {rows.map((dept, i) => (
-          <li
-            key={dept.departmentId}
-            className="list-row flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
-          >
-            <div className="flex items-center gap-3">
-              <RankBadge rank={i + 1} size="sm" />
-              <div>
-                <Link
-                  href={`/departments/${dept.departmentId}`}
-                  className="focus-ring rounded font-bold text-foreground hover:text-brand hover:underline"
-                >
-                  {dept.departmentName}
-                </Link>
-                <div className="text-xs text-muted">
-                  {dept.employeeCount} {dept.employeeCount === 1 ? "employee" : "employees"} ·{" "}
-                  <Badge tone="neutral">{RANKING_METRIC_LABEL[dept.metricKey] ?? dept.metricKey}</Badge>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right text-sm">
-              <div>
-                <div className="font-bold tabular-nums text-foreground">{dept.totalCasesCompleted}</div>
-                <div className="text-[10px] uppercase text-muted">Completed</div>
-              </div>
-              <div>
-                <div
-                  className={`font-bold tabular-nums ${
-                    dept.totalCasesReturned > 0 ? "text-negative" : "text-foreground"
-                  }`}
-                >
-                  {dept.totalCasesReturned}
-                </div>
-                <div className="text-[10px] uppercase text-muted">Returned</div>
-              </div>
-              <div className="w-16">
-                <div className="score-md text-xl text-brand">{dept.metricValue.toFixed(1)}</div>
-                <div className="text-[10px] uppercase text-muted">Ranking</div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </Card>
   );
 }

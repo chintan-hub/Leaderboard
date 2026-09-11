@@ -1,20 +1,13 @@
 import Link from "next/link";
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { Card, SectionTitle } from "@/components/ui";
-import { IconClipboard } from "@/components/nav-icons";
 import { IconGear, IconStar } from "@/components/icons";
 
 const TOOLS = [
   {
-    href: "/admin/production",
-    title: "Production Entry",
-    description: "Log completed and returned cases for an employee.",
-    icon: IconClipboard,
-  },
-  {
-    href: "/admin/manual-points",
-    title: "Manual Points",
-    description: "Award a +1 bonus or -1 deduction with a reason.",
+    href: "/admin/points",
+    title: "Award Points",
+    description: "Recognize good behaviour or record an accountability issue.",
     icon: IconStar,
   },
   {
@@ -33,7 +26,7 @@ export default async function AdminHomePage() {
       <SectionTitle subtitle={admin ? `Signed in as ${admin.username}` : undefined}>
         Admin Tools
       </SectionTitle>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {TOOLS.map((tool) => (
           <Link key={tool.href} href={tool.href} className="focus-ring block rounded-xl">
             <Card className="h-full transition hover:-translate-y-0.5 hover:border-border-strong hover:shadow-surface-raised">

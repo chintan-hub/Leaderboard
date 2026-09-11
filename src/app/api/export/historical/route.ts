@@ -1,39 +1,34 @@
-import { getAllEmployeesMonthlyHistory } from "@/lib/queries";
+import { getPointEvents } from "@/lib/queries";
+import { getCategoryLabel } from "@/lib/scoring/point-categories";
 import { xlsxResponse } from "@/lib/export";
 
-function monthName(month: number): string {
-  return new Date(Date.UTC(2000, month - 1, 1)).toLocaleDateString("en-US", { month: "long" });
-}
-
-/** Every employee's performance for every month on record — the "export all history" button. */
+/** Every point event ever recorded — the "Export All History" button. */
 export async function GET() {
-  const history = await getAllEmployeesMonthlyHistory();
+  const events = await getPointEvents();
 
-  const rows = history.map((r) => ({
-    year: r.year,
-    month: monthName(r.month),
-    employee: r.employeeName,
-    department: r.departmentName,
-    casesCompleted: r.casesCompleted,
-    casesReturned: r.casesReturned,
-    netCases: r.net,
-    manualPoints: r.manualScore,
-    finalScore: r.finalScore,
+  const rows = events.map((e) => ({
+    date: e.eventDate.toLocaleDateString("en-US"),
+    employee: e.employeeName,
+    department: e.departmentName,
+    points: e.points >= 0 ? `+${e.points}` : e.points,
+    direction: e.direction,
+    category: getCategoryLabel(e.category) ?? "",
+    reason: e.reason,
+    recordedBy: e.createdByUsername,
   }));
 
-  return xlsxResponse("lab-leaderboard-full-history.xlsx", [
+  return xlsxResponse("team-points-full-history.xlsx", [
     {
-      name: "Monthly History",
+      name: "Point History",
       columns: [
-        { header: "Year", key: "year", width: 8 },
-        { header: "Month", key: "month", width: 12 },
+        { header: "Date", key: "date", width: 14 },
         { header: "Employee", key: "employee", width: 24 },
         { header: "Department", key: "department", width: 20 },
-        { header: "Cases Completed", key: "casesCompleted", width: 16 },
-        { header: "Cases Returned", key: "casesReturned", width: 16 },
-        { header: "Net Cases", key: "netCases", width: 12 },
-        { header: "Manual Points", key: "manualPoints", width: 14 },
-        { header: "Final Score", key: "finalScore", width: 12 },
+        { header: "Points", key: "points", width: 10 },
+        { header: "Positive/Negative", key: "direction", width: 16 },
+        { header: "Category", key: "category", width: 22 },
+        { header: "Reason", key: "reason", width: 40 },
+        { header: "Recorded By", key: "recordedBy", width: 18 },
       ],
       rows,
     },

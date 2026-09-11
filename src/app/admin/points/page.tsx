@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import { SectionTitle } from "@/components/ui";
-import ManualPointForm from "./manual-point-form";
+import PointForm from "./point-form";
 
-export default async function ManualPointsPage() {
+export default async function AwardPointsPage() {
   const employees = await prisma.employee.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
@@ -11,10 +11,10 @@ export default async function ManualPointsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle subtitle="Separate from production. Every point requires a reason — no unexplained changes.">
-        Manual Points
+      <SectionTitle subtitle="Recognize good behaviour or record an accountability issue. Every point requires a category and a reason — no unexplained changes.">
+        Award Points
       </SectionTitle>
-      <ManualPointForm
+      <PointForm
         employees={employees.map((e) => ({
           id: e.id,
           label: `${e.name} — ${e.department.name}`,

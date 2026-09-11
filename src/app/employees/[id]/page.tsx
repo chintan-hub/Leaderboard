@@ -4,6 +4,14 @@ import { getEmployeeDetail } from "@/lib/queries";
 import { Badge, Card, EmptyState, SectionTitle } from "@/components/ui";
 import TrendChart from "@/components/trend-chart";
 
+function monthLabel(year: number, month: number): string {
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export default async function EmployeeDetailPage({
   params,
 }: {
@@ -13,7 +21,8 @@ export default async function EmployeeDetailPage({
   const employee = await getEmployeeDetail(id);
   if (!employee) notFound();
 
-  const { summary } = employee;
+  const { summary, currentMonth } = employee;
+  const now = new Date();
 
   return (
     <div className="space-y-6">
@@ -31,52 +40,74 @@ export default async function EmployeeDetailPage({
         {!employee.isActive && <Badge tone="neutral">Inactive</Badge>}
       </div>
 
-      <div>
-        <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">All-Time</h3>
-        <Card raised>
-          <div className="flex flex-wrap gap-x-10 gap-y-4">
-            <div>
-              <div className="score-lg text-2xl text-foreground">{summary.casesCompleted}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Completed</div>
-            </div>
-            <div>
-              <div className={`score-lg text-2xl ${summary.casesReturned > 0 ? "text-negative" : "text-foreground"}`}>
-                {summary.casesReturned}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">All-Time</h3>
+          <Card raised>
+            <div className="flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <div className="score-lg text-2xl text-foreground">
+                  {summary.positivePoints > 0 ? "+" : ""}
+                  {summary.positivePoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Positive</div>
               </div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Returned</div>
-            </div>
-            <div>
-              <div className="score-lg text-2xl text-positive">{summary.productionScore}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Net</div>
-            </div>
-            <div>
-              <div className={`score-lg text-2xl ${summary.manualScore < 0 ? "text-negative" : "text-foreground"}`}>
-                {summary.manualScore >= 0 ? "+" : ""}
-                {summary.manualScore}
+              <div>
+                <div className={`score-lg text-2xl ${summary.negativePoints > 0 ? "text-negative" : "text-foreground"}`}>
+                  {summary.negativePoints > 0 ? "−" : ""}
+                  {summary.negativePoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Negative</div>
               </div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Manual</div>
+              <div>
+                <div className="score-hero text-4xl text-brand">
+                  {summary.netPoints >= 0 ? "+" : ""}
+                  {summary.netPoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Total Points</div>
+              </div>
             </div>
-            <div>
-              <div className="score-hero text-4xl text-brand">{summary.finalScore}</div>
-              <div className="text-xs font-bold uppercase tracking-wide text-muted">Final Score</div>
+          </Card>
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
+            This Month · {monthLabel(now.getUTCFullYear(), now.getUTCMonth() + 1)}
+          </h3>
+          <Card raised>
+            <div className="flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <div className="score-lg text-2xl text-foreground">
+                  {currentMonth.positivePoints > 0 ? "+" : ""}
+                  {currentMonth.positivePoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Positive</div>
+              </div>
+              <div>
+                <div className={`score-lg text-2xl ${currentMonth.negativePoints > 0 ? "text-negative" : "text-foreground"}`}>
+                  {currentMonth.negativePoints > 0 ? "−" : ""}
+                  {currentMonth.negativePoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Negative</div>
+              </div>
+              <div>
+                <div className="score-hero text-4xl text-brand">
+                  {currentMonth.netPoints >= 0 ? "+" : ""}
+                  {currentMonth.netPoints}
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Net Points</div>
+              </div>
             </div>
-          </div>
-          {summary.casesReturnedExternal > 0 && (
-            <p className="mt-3 border-t border-border pt-3 text-xs text-muted">
-              {summary.casesReturnedExternal} additional returned case
-              {summary.casesReturnedExternal === 1 ? "" : "s"} logged as external (not this employee&apos;s fault) —
-              not charged against the score.
-            </p>
-          )}
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {employee.monthlyHistory.length === 0 ? (
         <div>
           <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Monthly history</h3>
           <EmptyState
-            title="No production recorded yet"
-            description="Monthly history will appear here once production is logged."
+            title="No points recorded yet"
+            description="Monthly history will appear here once a point is awarded."
           />
         </div>
       ) : (
@@ -85,11 +116,11 @@ export default async function EmployeeDetailPage({
             <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">Monthly trend</h3>
             <Card>
               <TrendChart
-                label="net cases"
+                label="net points"
                 points={[...employee.monthlyHistory]
                   .reverse()
                   .slice(-12)
-                  .map((m) => ({ year: m.year, month: m.month, value: m.net }))}
+                  .map((m) => ({ year: m.year, month: m.month, value: m.netPoints }))}
               />
             </Card>
           </div>
@@ -114,18 +145,22 @@ export default async function EmployeeDetailPage({
                     </span>
                     <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right tabular-nums">
                       <span>
-                        <span className="font-bold text-foreground">{m.casesCompleted}</span>{" "}
-                        <span className="text-xs text-muted">completed</span>
+                        <span className="font-bold text-foreground">
+                          {m.positivePoints > 0 ? "+" : ""}
+                          {m.positivePoints}
+                        </span>{" "}
+                        <span className="text-xs text-muted">positive</span>
                       </span>
                       <span>
-                        <span className={`font-bold ${m.casesReturned > 0 ? "text-negative" : "text-foreground"}`}>
-                          {m.casesReturned}
+                        <span className={`font-bold ${m.negativePoints > 0 ? "text-negative" : "text-foreground"}`}>
+                          {m.negativePoints > 0 ? "−" : ""}
+                          {m.negativePoints}
                         </span>{" "}
-                        <span className="text-xs text-muted">returned</span>
+                        <span className="text-xs text-muted">negative</span>
                       </span>
-                      <span className={`font-bold ${m.finalScore < 0 ? "text-negative" : "text-brand"}`}>
-                        {m.finalScore >= 0 ? "+" : ""}
-                        {m.finalScore} final
+                      <span className={`font-bold ${m.netPoints < 0 ? "text-negative" : "text-brand"}`}>
+                        {m.netPoints >= 0 ? "+" : ""}
+                        {m.netPoints} net
                       </span>
                     </span>
                   </li>

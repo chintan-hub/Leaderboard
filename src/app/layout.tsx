@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Dental Lab Leaderboard",
-  description: "Transparent production performance and recognition tracking.",
+  description: "Transparent team points and recognition tracking.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

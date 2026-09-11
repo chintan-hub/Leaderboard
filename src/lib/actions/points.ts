@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/current-admin";
-import { validateNewTransaction } from "@/lib/scoring/validation";
+import { validateNewPointTransaction } from "@/lib/scoring/validation";
 import type { ActionResult } from "./auth";
 
-/** Records a +1 bonus or -1 deduction. A reason is always required — no unexplained manual changes. */
-export async function recordManualPoint(
+/** Records a +1 recognition or -1 deduction. A category and a reason are always required — no unexplained points. */
+export async function recordPoint(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -15,6 +15,7 @@ export async function recordManualPoint(
 
   const employeeId = String(formData.get("employeeId") ?? "");
   const direction = String(formData.get("direction") ?? "");
+  const category = String(formData.get("category") ?? "");
   const reason = String(formData.get("reason") ?? "");
   const eventDateRaw = String(formData.get("eventDate") ?? "");
   const eventDate = eventDateRaw ? new Date(`${eventDateRaw}T00:00:00Z`) : new Date();
@@ -33,11 +34,11 @@ export async function recordManualPoint(
 
   const type = direction === "BONUS" ? "MANUAL_BONUS" : "MANUAL_DEDUCTION";
 
-  const validation = validateNewTransaction({
+  const validation = validateNewPointTransaction({
     type,
     employeeId,
     departmentId: employee.departmentId,
-    points: 1,
+    category,
     reason,
     eventDate,
   });
@@ -49,6 +50,7 @@ export async function recordManualPoint(
       employeeId,
       departmentId: employee.departmentId,
       points: 1,
+      category,
       reason,
       eventDate,
       batchId,
@@ -59,5 +61,8 @@ export async function recordManualPoint(
   revalidatePath("/");
   revalidatePath("/activity");
   revalidatePath("/monthly");
+  revalidatePath("/employees");
+  revalidatePath("/departments");
+  revalidatePath("/display");
   return {};
 }

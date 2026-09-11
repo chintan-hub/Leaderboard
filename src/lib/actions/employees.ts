@@ -54,16 +54,15 @@ export async function updateEmployee(
 
   revalidatePath("/employees");
   revalidatePath("/departments");
-  revalidatePath("/admin/production");
-  revalidatePath("/admin/manual-points");
+  revalidatePath("/admin/points");
   return {};
 }
 
 /**
  * Deactivating never deletes anything — the employee's full history stays
  * in the ledger exactly as recorded. They just stop appearing in active
- * picklists (production entry, manual points) and current leaderboards.
- * Reactivating is the same toggle in reverse.
+ * picklists (Award Points) and current standings. Reactivating is the same
+ * toggle in reverse.
  */
 export async function setEmployeeActive(
   _prev: ActionResult,
@@ -82,7 +81,7 @@ export async function setEmployeeActive(
   revalidatePath("/employees");
   revalidatePath("/departments");
   revalidatePath("/");
-  revalidatePath("/admin/production");
-  revalidatePath("/admin/manual-points");
+  revalidatePath("/admin/points");
+  revalidatePath("/display");
   return {};
 }

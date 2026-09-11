@@ -15,14 +15,14 @@ export default async function EmployeesPage() {
 
   return (
     <div className="space-y-8">
-      <SectionTitle subtitle="Grouped by department. Final score = Production Score + Manual Bonus/Deduction.">
+      <SectionTitle subtitle="Grouped by department. Net points = positive points minus negative points.">
         Employees
       </SectionTitle>
 
       {!hasAnyEmployees ? (
         <EmptyState
           title="No employees yet"
-          description="Add your first employee below to start tracking production."
+          description="Add your first employee below to start tracking points."
         />
       ) : (
         <div className="space-y-6">
@@ -48,10 +48,9 @@ export default async function EmployeesPage() {
                           </div>
                           <div className="flex flex-wrap items-center gap-3">
                             <ScoreBreakdown
-                              completed={emp.summary.casesCompleted}
-                              rework={emp.summary.casesReturned}
-                              manual={emp.summary.manualScore}
-                              final={emp.summary.finalScore}
+                              positive={emp.summary.positivePoints}
+                              negative={emp.summary.negativePoints}
+                              net={emp.summary.netPoints}
                               size="sm"
                             />
                             {admin && <DeactivateButton employeeId={emp.id} isActive={emp.isActive} />}

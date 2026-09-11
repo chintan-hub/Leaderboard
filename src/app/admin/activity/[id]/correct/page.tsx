@@ -5,10 +5,10 @@ import { Card, SectionTitle } from "@/components/ui";
 import CorrectionForm from "./correction-form";
 
 const TYPE_LABEL: Record<string, string> = {
-  PRODUCTION_COMPLETED: "Cases completed",
-  PRODUCTION_REWORK: "Cases returned",
-  MANUAL_BONUS: "Manual +1 bonus",
-  MANUAL_DEDUCTION: "Manual -1 deduction",
+  PRODUCTION_COMPLETED: "Cases completed (legacy)",
+  PRODUCTION_REWORK: "Cases returned (legacy)",
+  MANUAL_BONUS: "Recognition +1",
+  MANUAL_DEDUCTION: "Deduction −1",
 };
 
 export default async function CorrectTransactionPage({

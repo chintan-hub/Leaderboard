@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getDepartmentLeaderboard, getEmployeeLeaderboard } from "@/lib/queries";
+import { getEmployeeLeaderboard } from "@/lib/queries";
 import { SectionTitle } from "@/components/ui";
 import { IconDownload, IconPrinter } from "@/components/icons";
-import { DepartmentLeaderboardPanel, EmployeeLeaderboardPanel } from "@/components/leaderboard-panels";
+import { EmployeeLeaderboardPanel } from "@/components/leaderboard-panels";
 import MonthlyPerformanceChart from "./monthly-performance-chart";
 
 function monthLabel(year: number, month: number): string {
@@ -28,10 +28,7 @@ export default async function MonthlyResultsPage({
   const year = Number(params.year) || now.getUTCFullYear();
   const month = Number(params.month) || now.getUTCMonth() + 1;
 
-  const [employeeLeaderboard, departmentLeaderboard] = await Promise.all([
-    getEmployeeLeaderboard({ year, month }),
-    getDepartmentLeaderboard({ year, month }),
-  ]);
+  const employeeLeaderboard = await getEmployeeLeaderboard({ year, month });
 
   const prev = shiftMonth(year, month, -1);
   const next = shiftMonth(year, month, 1);
@@ -44,7 +41,7 @@ export default async function MonthlyResultsPage({
           eyebrow={isCurrentMonth ? "Current month" : "Historical"}
           subtitle="Isolated by calendar month — nothing carries over from month to month."
         >
-          Monthly Results
+          Monthly Team Points
         </SectionTitle>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1 text-sm font-semibold text-muted">
@@ -88,33 +85,26 @@ export default async function MonthlyResultsPage({
       </div>
 
       <section>
-        <SectionTitle subtitle={monthLabel(year, month)}>Employee Leaderboard</SectionTitle>
+        <SectionTitle subtitle={monthLabel(year, month)}>Employee Standings</SectionTitle>
         <EmployeeLeaderboardPanel rows={employeeLeaderboard} />
       </section>
 
       {employeeLeaderboard.length > 0 && (
         <section>
-          <SectionTitle subtitle="Cases completed vs. cases returned, for every employee with activity this month">
-            Completed vs Returned
+          <SectionTitle subtitle="Positive vs. negative points, for every employee with activity this month">
+            Positive vs Negative
           </SectionTitle>
           <MonthlyPerformanceChart
             rows={employeeLeaderboard
-              .filter((r) => r.summary.casesCompleted > 0 || r.summary.casesReturned > 0)
+              .filter((r) => r.summary.positivePoints > 0 || r.summary.negativePoints > 0)
               .map((r) => ({
                 name: r.name,
-                completed: r.summary.casesCompleted,
-                returned: r.summary.casesReturned,
+                positive: r.summary.positivePoints,
+                negative: r.summary.negativePoints,
               }))}
           />
         </section>
       )}
-
-      <section>
-        <SectionTitle subtitle="Ranked by each department's own configured ranking metric">
-          Department Leaderboard
-        </SectionTitle>
-        <DepartmentLeaderboardPanel rows={departmentLeaderboard} />
-      </section>
     </div>
   );
 }

@@ -1,15 +1,18 @@
-// Dental Lab Leaderboard — data model
+// DentoCrafts Team Points & Recognition System — data model
 //
-// Core idea: every score-changing event (completed case, employee-caused
-// return, manual +1/-1) is one immutable row in ScoreTransaction. Nothing
-// else stores a running total — all scores are derived by summing this
-// ledger, so "why does this employee have 87 points" is always answerable
-// by listing their transactions.
+// Core idea: every point-changing event (a +1 recognition or -1
+// accountability deduction, always with a reason and category) is one
+// immutable row in ScoreTransaction. Nothing else stores a running total —
+// every employee's points are derived by summing this ledger, so "why does
+// this employee have 6 points" is always answerable by listing their
+// transactions. See src/lib/scoring/score.ts for the authoritative
+// calculation.
 //
-// SCORING UNIT: 1 case = 1 unit, regardless of how many teeth it contains.
-// A 32-tooth case and a 1-tooth case are both worth exactly 1. The number
-// of teeth in a case is not tracked anywhere in this schema — only case
-// counts. See src/lib/scoring/score.ts for the authoritative calculation.
+// This was originally a production-scoring leaderboard (completed/returned
+// case counts). That concept has been removed from the app; the
+// PRODUCTION_COMPLETED/PRODUCTION_REWORK transaction types and their
+// production-only columns (cases, responsibility) remain below purely so
+// old historical rows keep loading — see the comments on each for details.
 
 generator client {
   provider = "prisma-client-js"
@@ -33,21 +36,21 @@ model Admin {
   transactions ScoreTransaction[]
 }
 
-// Departments are configurable, not hard-coded. scoringRule and
-// rankingMetric are keys resolved against a registry in
-// src/lib/scoring/rules.ts, so new department-specific formulas can be
-// added in code without a migration.
+// Departments are configurable, not hard-coded.
+//
+// scoringRule, rankingMetric, productionTrackingEnabled and
+// reworkTrackingEnabled are LEGACY columns from the old production-scoring
+// system (removed — the app is now a points-only Team Points & Recognition
+// System). They are kept as-is, unused, rather than dropped in a migration:
+// dropping them isn't necessary for anything the app does today, and
+// leaving them costs nothing while keeping the migration history simple and
+// reversible. No code reads or writes them anymore.
 model Department {
   id            String   @id @default(cuid())
   name          String   @unique
   slug          String   @unique
   scoringRule   String   @default("NET_PRODUCTION")
   rankingMetric String   @default("AVG_NET_PER_EMPLOYEE")
-  // Whether this department logs production at all, and whether returned
-  // cases are tracked separately from completed ones. Both default on
-  // (matches every initial department); turning productionTrackingEnabled
-  // off hides the department from Production Entry, turning
-  // reworkTrackingEnabled off hides just the returned-case column/field.
   productionTrackingEnabled Boolean @default(true)
   reworkTrackingEnabled     Boolean @default(true)
   isActive      Boolean  @default(true)
@@ -72,6 +75,11 @@ model Employee {
   @@index([departmentId])
 }
 
+// PRODUCTION_COMPLETED and PRODUCTION_REWORK are LEGACY types from the old
+// production-scoring system (removed — see the Department comment above).
+// They are kept in the enum, unused by any code that creates new rows,
+// solely so existing historical rows of these types keep loading correctly
+// wherever the full ledger is read (e.g. Activity History).
 enum TransactionType {
   PRODUCTION_COMPLETED
   PRODUCTION_REWORK
@@ -124,19 +132,27 @@ model ScoreTransaction {
   // Signed point delta for MANUAL_* rows: +1 or -1. Null for PRODUCTION_* rows.
   points Int?
 
-  // Required only for PRODUCTION_REWORK.
+  // Required only for PRODUCTION_REWORK (legacy).
   responsibility ReworkResponsibility?
 
   // Only set for type CORRECTION — see CorrectionTarget above. `points`
   // carries the signed delta in this case (may be negative).
   correctionTarget CorrectionTarget?
 
-  // Always required — no unexplained score changes, production or manual.
+  // Structured reason category for MANUAL_BONUS/MANUAL_DEDUCTION point
+  // events — e.g. "DOCTOR_PRAISE", "LATE_MARK". Keys resolved against
+  // src/lib/scoring/point-categories.ts, the same "string key resolved in
+  // code" pattern Department.scoringRule already used, so new categories
+  // can be added without a migration. Null for legacy PRODUCTION_* rows and
+  // for CORRECTION rows, neither of which carry a category of their own.
+  category String?
+
+  // Always required — no unexplained score changes.
   reason String
 
-  // The calendar date the work/event happened on. This drives monthly
-  // bucketing for Employee of the Month, independent of when it was entered.
-  // A correction reuses the ORIGINAL transaction's eventDate so it
+  // The calendar date the event happened on. This drives monthly bucketing
+  // (Monthly Results, employee point history), independent of when it was
+  // entered. A correction reuses the ORIGINAL transaction's eventDate so it
   // retroactively fixes the correct month, even if entered later.
   eventDate DateTime
 
@@ -151,10 +167,10 @@ model ScoreTransaction {
   correctsTransaction   ScoreTransaction? @relation("Correction", fields: [correctsTransactionId], references: [id])
   correctedBy           ScoreTransaction? @relation("Correction")
 
-  // Idempotency key: a bulk (or single) save stamps every row it creates
-  // with the same batchId. If a submission is retried/double-clicked with
-  // the same key, the action detects existing rows and skips re-creating
-  // them instead of silently duplicating production.
+  // Idempotency key stamped on a created row. If a submission is
+  // retried/double-clicked with the same key, the action detects the
+  // existing row and skips re-creating it instead of silently duplicating
+  // the point event.
   batchId String?
 
   @@index([employeeId])

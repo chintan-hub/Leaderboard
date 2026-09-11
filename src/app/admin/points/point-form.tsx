@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { recordManualPoint } from "@/lib/actions/manual-points";
-import { Card, Field, FormError, TextInput } from "@/components/ui";
+import { recordPoint } from "@/lib/actions/points";
+import { Card, Field, FormError, Select, TextInput } from "@/components/ui";
+import { NEGATIVE_CATEGORIES, POSITIVE_CATEGORIES } from "@/lib/scoring/point-categories";
 
 type Direction = "BONUS" | "DEDUCTION";
 
@@ -13,13 +14,15 @@ function newBatchId(): string {
     : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function ManualPointForm({
+export default function PointForm({
   employees,
 }: {
   employees: { id: string; label: string }[];
 }) {
   const [direction, setDirection] = useState<Direction>("BONUS");
-  const [state, formAction, pending] = useActionState(recordManualPoint, {});
+  const categories = direction === "BONUS" ? POSITIVE_CATEGORIES : NEGATIVE_CATEGORIES;
+  const [category, setCategory] = useState(categories[0].value);
+  const [state, formAction, pending] = useActionState(recordPoint, {});
   // A fresh id per submission attempt, without deriving it in an effect: track the
   // previous `state` reference and roll the id during render when it changes
   // (React's documented pattern for resetting state in response to a prop/value change).
@@ -28,6 +31,12 @@ export default function ManualPointForm({
   if (state !== lastState) {
     setLastState(state);
     setBatchId(newBatchId());
+  }
+
+  function switchDirection(next: Direction) {
+    setDirection(next);
+    const nextCategories = next === "BONUS" ? POSITIVE_CATEGORIES : NEGATIVE_CATEGORIES;
+    setCategory(nextCategories[0].value);
   }
 
   if (employees.length === 0) {
@@ -53,16 +62,16 @@ export default function ManualPointForm({
         <div className="flex gap-1 rounded-lg bg-silver-tint p-1">
           <button
             type="button"
-            onClick={() => setDirection("BONUS")}
+            onClick={() => switchDirection("BONUS")}
             className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
               direction === "BONUS" ? "bg-white text-positive shadow-surface" : "text-muted hover:text-foreground"
             }`}
           >
-            +1 Bonus
+            +1 Recognition
           </button>
           <button
             type="button"
-            onClick={() => setDirection("DEDUCTION")}
+            onClick={() => switchDirection("DEDUCTION")}
             className={`focus-ring flex-1 rounded-md py-2 text-sm font-semibold transition ${
               direction === "DEDUCTION" ? "bg-white text-negative shadow-surface" : "text-muted hover:text-foreground"
             }`}
@@ -72,18 +81,29 @@ export default function ManualPointForm({
         </div>
 
         <Field label="Employee" htmlFor="employeeId">
-          <select
-            id="employeeId"
-            name="employeeId"
-            required
-            className="focus-ring w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground"
-          >
+          <Select id="employeeId" name="employeeId" required>
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.label}
               </option>
             ))}
-          </select>
+          </Select>
+        </Field>
+
+        <Field label="Category" htmlFor="category">
+          <Select
+            id="category"
+            name="category"
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
         </Field>
 
         <Field label="Date" htmlFor="eventDate">
@@ -103,8 +123,8 @@ export default function ManualPointForm({
             required
             placeholder={
               direction === "BONUS"
-                ? "e.g. Helped another department with urgent work"
-                : "e.g. Failed to update required case information"
+                ? "e.g. Dr. Shah praised the finishing quality of today's case"
+                : "e.g. Arrived 40 minutes late without notice"
             }
           />
         </Field>

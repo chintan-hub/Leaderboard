@@ -162,47 +162,45 @@ export function RankBadge({ rank, size = "md" }: { rank: number; size?: "sm" | "
 }
 
 /**
- * The one place the Completed / Rework / Net / Manual / Final breakdown is
- * rendered, reused by the dashboard leaderboard, employee detail, and the
- * print layout — so "never hide the calculation" stays visually consistent
- * everywhere instead of being re-implemented per screen.
+ * The one place the Positive / Negative / Net points breakdown is rendered,
+ * reused by the employees list and elsewhere — so "never hide the
+ * calculation" stays visually consistent everywhere instead of being
+ * re-implemented per screen.
  */
 export function ScoreBreakdown({
-  completed,
-  rework,
-  manual,
-  final,
+  positive,
+  negative,
+  net,
   size = "md",
 }: {
-  completed: number;
-  rework: number;
-  manual: number;
-  final: number;
+  positive: number;
+  negative: number;
+  net: number;
   size?: "sm" | "md";
 }) {
   const numberClass = size === "sm" ? "text-base font-bold" : "text-lg font-extrabold";
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-right">
       <div>
-        <div className={`${numberClass} tabular-nums text-foreground`}>{completed}</div>
-        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Completed</div>
-      </div>
-      <div>
-        <div className={`${numberClass} tabular-nums ${rework > 0 ? "text-negative" : "text-foreground"}`}>
-          {rework}
+        <div className={`${numberClass} tabular-nums text-foreground`}>
+          {positive > 0 ? "+" : ""}
+          {positive}
         </div>
-        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Returned</div>
+        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Positive</div>
       </div>
       <div>
-        <div className={`${numberClass} tabular-nums ${manual > 0 ? "text-positive" : manual < 0 ? "text-negative" : "text-foreground"}`}>
-          {manual >= 0 ? "+" : ""}
-          {manual}
+        <div className={`${numberClass} tabular-nums ${negative > 0 ? "text-negative" : "text-foreground"}`}>
+          {negative > 0 ? "−" : ""}
+          {negative}
         </div>
-        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Manual</div>
+        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Negative</div>
       </div>
       <div>
-        <div className={`score-md text-xl text-brand`}>{final}</div>
-        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Final</div>
+        <div className={`score-md text-xl text-brand`}>
+          {net >= 0 ? "+" : ""}
+          {net}
+        </div>
+        <div className="text-[10px] font-bold uppercase tracking-wide text-muted">Net</div>
       </div>
     </div>
   );
